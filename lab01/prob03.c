@@ -4,11 +4,13 @@
 // problem 03
 int main(int argc, char ** argv) {
 	int r;
-	fprintf(stdout, "Enter an integer: \n");
+	fprintf(stdout, "Enter an integer: ");
 	scanf("%d", &r);
 
-	fprintf(stdout, "Diameter %d\n", 2*r);
-	fprintf(stdout, "Circumference %f\n", 2*PI*r);
-	fprintf(stdout, "Area %f\n", PI*r*r);
+	fprintf(stdout, "----------------------------------\n");
+	fprintf(stdout, "Diameter:\t%d\n", 2*r);
+	fprintf(stdout, "Circumference:\t%f\n", 2*PI*r);
+	fprintf(stdout, "Area:\t\t%f\n", PI*r*r);
+	fprintf(stdout, "----------------------------------\n");
 	return 0;
 }
