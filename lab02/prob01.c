@@ -25,7 +25,7 @@ int main(int argc, char ** argv) {
 
 	// the offset of the current bit we are looking at
 	int bit = 4; // 4th bit (0 based, so 5 max bits)
-	// can use the following instead to support any number of bits :)
+	// can use the following instead to support any number of bits ;)
 	// int bit = log10(dec) + 1;
 
 	while (bit >= 0) {

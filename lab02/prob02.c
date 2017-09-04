@@ -1,5 +1,10 @@
 #include <stdio.h>
 
+int MAX(int X, int Y) {
+	if (X > Y) { return X; }
+	return Y;
+}
+
 int main(int argc, char ** argv) {
 	// these will be the three sides of our triangle
 	int i, j, k;
@@ -11,31 +16,21 @@ int main(int argc, char ** argv) {
 		return -1;
 	}
 
-	// not really sure what I'm allowed to use to get credit
-	// so let's just try all the possible cases one by one
-	
 	// check for a triangle with the triangle inequality theorem
 	// by checking to make sure that the smaller two sides
 	// add up to and are greater than the hypotenuse
 	
-	// I think you don't want logical AND's
-	// but nesting all these cases would be a pain in the butt
-	if (i <= k && j <= k && (i + j) > k) {
-		// k is the hypotenuse
+	// the hypotenuse is the largest side entered
+	int hyp = MAX(MAX(i, j), k);
+	
+	// one of i,j,k is the hypotenuse, 
+	// subtract it to get the sum of the smaller two sides
+	// then compare it to the largest side
+	if ((i + j + k) - hyp > hyp) {
 		printf("Nice Triangle!\n");
-		return 0;
-
-	} else if (i <= j && k <= j && (i + k) > j) {
-		// j is the hypotenuse
-		printf("Nice Triangle!\n");
-		return 0;
-		
-	} if (j <= i && k <= i && (k + j) > i) {
-		// i is the hypotenuse
-		printf("Nice Triangle!\n");
-		return 0;
+	} else {
+		printf("Not a Triangle!\n");
 	}
 
-	printf("Not a Triangle!\n");
 	return 0;
 }

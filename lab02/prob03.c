@@ -11,32 +11,26 @@ int main(int argc, char ** argv) {
 	printf("Enter 3 sides of a triangle (integer lengths): ");
 	scanf("%d %d %d", &i, &j, &k);
 
-	// the hypotenuse is the largest side entered
-	int hyp = MAX(MAX(i, j), k);
-
 	if (i <= 0 || j <= 0 || k <= 0) {
 		fprintf(stderr, "Error - all sides must be positive & nonzero!");
 		return -1;
 	}
 
-	// not really sure what I'm allowed to use to get credit
-	// so let's just try all the possible cases one by one
+	// the hypotenuse is the largest side entered
+	int hyp = MAX(MAX(i, j), k);
 	
 	// check for a right triangle with the pythagorean theorem
+	// a^2 + b^2 = c^2 
+	// => a^2 + b^2 + c^2 = c^2 + c^2 
+	// => a^2 + b^2 + c^2 = 2*c^2
+	// note I don't know which i,j,k is hyp, 
+	// but I do know it must be one of them
 
-	// I think you don't want logical AND's
-	// but nesting all these cases would be a pain in the butt
-	if (i*i + j*j == hyp*hyp) {
+	if ((i*i + j*j + k*k) == 2*hyp*hyp) {
 		printf("Nice Right Triangle!\n");
-		return 0;
-	} else if (i*i + k*k == hyp*hyp) {
-		printf("Nice Right Triangle!\n");
-		return 0;
-	} else if (j*j + k*k == hyp*hyp) {
-		printf("Nice Right Triangle!\n");
-		return 0;
+	} else {
+		printf("Not a Right Triangle!\n");
 	}
 
-	printf("Not a Right Triangle!\n");
 	return 0;
 }
