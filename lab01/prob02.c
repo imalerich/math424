@@ -1,6 +1,14 @@
 #include <stdio.h>
-#define MIN(X, Y) (X < Y ? X : Y)
-#define MAX(X, Y) (X > Y ? X : Y)
+
+int MIN(int X, int Y) {
+	if (X < Y) { return X; }
+	return Y;
+}
+
+int MAX(int X, int Y) {
+	if (X > Y) { return X; }
+	return Y;
+}
 
 // problem 02
 int main(int argc, char ** argv) {
