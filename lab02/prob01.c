@@ -7,12 +7,13 @@ int impow(int a, int b) {
 	if (b == 0) { return 1; }
 	// would be a lot nicer recursively, or at least a for loop
 	// but I've only seen you use a while loop, so here ya go
+	int ret = a;
 	while (b > 1) {
-		a *= a;
+		ret *= a;
 		b--;
 	}
 
-	return a;
+	return ret;
 }
 
 int main(int argc, char ** argv) {
