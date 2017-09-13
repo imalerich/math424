@@ -58,6 +58,12 @@ float min_det(float mat[][SIZE], int I, int J) {
 		 mat[ MAX(i[0], i[1]) ][ MIN(j[0], j[1]) ]);
 }
 
+/* -------------------------------------
+ * void mat_inv(float mat[][SIZE])
+ * Takes the inverse of a square matrix.
+ * Supported sizes are 1x1, 2x2, 3x3.
+ * ------------------------------------- */
+
 void mat_inv(float mat[][SIZE]) {
 	float inv[SIZE][SIZE];
 	float d = det(mat);
@@ -75,16 +81,23 @@ void mat_inv(float mat[][SIZE]) {
 		break;
 
 	case 2:
-		inv[0][0] = (1/d) * mat[1][1];
-		inv[0][1] = (1/d) * -mat[0][1];
-		inv[1][0] = (1/d) * -mat[1][0];
-		inv[1][1] = (1/d) * mat[0][0];
+		inv[0][0] = mat[1][1]  / d;
+		inv[0][1] = -mat[0][1] / d;
+		inv[1][0] = -mat[1][0] / d;
+		inv[1][1] = mat[0][0]  / d;
 		break;
 
 	case 3:
 		for (int i=0; i<SIZE; i++) {
 			for (int j=0; j<SIZE; j++) {
-				inv[i][j] = (1/d) * min_det(mat, i, j);
+				// creates a grid of +1, -1 signs
+				// starting with +1 in the top left corner
+				int sign = -2 * (((i*SIZE) + j) % 2) + 1;
+
+				// use (j,i) rather than (i,j)
+				// to find the minor determinents
+				// of the transpose matrix
+				inv[i][j] = sign * min_det(mat, j, i) / d;
 			}
 		}
 
@@ -114,7 +127,7 @@ int main(int argc, char ** argv) {
 	// print the results of matrix multiplication on tha test case
 	printf("The matrix is: \n");
 	print_sq_mat(mat);
-	printf("\nThe inverse is: \n");
+	printf("\nIt's inverse is: \n");
 	mat_inv(mat);
 
 	return 0;
@@ -127,7 +140,7 @@ int main(int argc, char ** argv) {
 void print_sq_mat(float mat[][SIZE]) {
 	for (int i=0; i<SIZE; i++) {
 		for (int j=0; j<SIZE; j++) {
-			printf("%.3f\t", mat[i][j]);
+			printf("%.4f\t", mat[i][j]);
 		}
 
 		printf("\n");

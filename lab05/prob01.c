@@ -8,6 +8,11 @@
 
 void print_sq_mat(float mat[][SIZE]);
 
+/* ----------------------------------------------------
+ * void mat_mul(float mat1[][SIZE], float mat1[][SIZE])
+ * Performs matrix multiplication on square matrices.
+ * ---------------------------------------------------- */
+
 void mat_mul(float mat0[][SIZE], float mat1[][SIZE]) {
 	float res[SIZE][SIZE];
 
@@ -60,7 +65,7 @@ int main(int argc, char ** argv) {
 void print_sq_mat(float mat[][SIZE]) {
 	for (int i=0; i<SIZE; i++) {
 		for (int j=0; j<SIZE; j++) {
-			printf("%.3f\t", mat[i][j]);
+			printf("%.4f\t", mat[i][j]);
 		}
 
 		printf("\n");
