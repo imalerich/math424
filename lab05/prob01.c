@@ -6,6 +6,7 @@
 #define SIZE 3
 #define MOD_RAND 10
 
+// Forward declarations HO!
 void print_sq_mat(float mat[][SIZE]);
 
 /* ----------------------------------------------------

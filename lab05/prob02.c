@@ -14,6 +14,7 @@
 #define MIN(a, b) (a < b) ? a : b
 #define MAX(a, b) (a < b) ? b : a
 
+// Forward declarations HO!
 void print_sq_mat(float mat[][SIZE]);
 float min_det(float mat[][SIZE], int I, int J);
 

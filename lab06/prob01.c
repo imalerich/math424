@@ -34,6 +34,8 @@ int main(int argc, char ** argv) {
 	srand(time(NULL));
 
 	const size_t count = 10;
+	// okay we haven't learned malloc
+	// but it's literally just an array declaration
 	char * arr = malloc(sizeof(char) * count);
 	for (int i=0; i<count; i++) {
 		arr[i] = 'a' + rand() % 26;
