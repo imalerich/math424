@@ -1,0 +1,64 @@
+\documentclass[12pt]{jhwhw}
+\author{Ian Malerich}
+\title{Math 424 - Lab 09}
+\usepackage{amssymb, amsfonts, mathtools, graphicx, breqn}
+\usepackage{minted, subfig, float, scrextend, setspace}
+\usemintedstyle{friendly}
+
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+
+\onehalfspacing
+\begin{document}
+\raggedright
+
+%% Problem 1
+\textbf{1.}
+\textcolor[RGB]{240,240,240}{\rule{\textwidth}{0.5pt}}\bigbreak
+
+	\begin{addmargin}[1em]{}
+		Assume we have cores labeled $0,1,2,\ldots (p-1)$, each index denoted by the variable
+		my\_rank. We would likely to denote $n$ integers between these $p$ cores.
+		Let $k = \ceil{\frac{n}{p}}$, note that $k*p$ need not equal $n$ if $p$ does
+		not evenly divide $n$, in this case, all cores will be given equal work of $k$ items
+		with the exception of the last core, who will only take the remaining. \\
+		Thus, given core with index my\_rank\ldots \\
+		case my\_rank$ < (p-1)$: \\
+		\begin{addmargin}[2em]{}
+			Note that in the loop my\_last\_i is exclusive, while my\_first\_i is inclusive,
+			therefore, my\_last\_i should be equal to my\_first\_i for the next core. \\
+			my\_first\_i $= i \times k$ \\
+			my\_last\_i $= (i+1) \times k$ \\
+		\end{addmargin}
+		Note that we are adding an extra 1 to my\_rank to convert from the 0 based indecies
+		given by the core id to the 1 based indecies I used for my algebra. 
+		case my\_rank$ = (p-1)$: \\
+		\begin{addmargin}[2em]{}
+			This is the last core, we don't want to dip out of bounds of our array, thus
+			simply terminate it with value $n$. As the array is 0 based, and my\_last\_i
+			is exclusive, this is the value we want and not $n-1$. \\
+			my\_first\_i $= i \times k$ \\
+			my\_last\_i $= n$ \\
+		\end{addmargin}
+	\end{addmargin}
+
+%% Problem 2
+\bigbreak
+\textbf{2.}
+\textcolor[RGB]{240,240,240}{\rule{\textwidth}{0.5pt}}\bigbreak
+
+	\begin{addmargin}[1em]{}
+		Note that each subsequent core takes twice as long as the previous (given equal
+		amounts of work), thus if we desire to have them take equal amounts of time,
+		each subsequent core should do half as much work. \\
+		Thus we want $\Sigma_{i=0}^{p-1} \frac{k}{2^i} = n$ for some constant $k$, the
+		amount of work performed by the initial unit (note that $\frac{k}{2^0} = k$).
+		Doing some simple algebra we find $k = n / (\Sigma_{i=0}^{p-1} \frac{1}{2^i})$.
+		Note that $k\in \mathbb{R}$, we will take the ceiling as before at each step.
+		Then, my\_first\_i = $\ceil{\sum_{i=0}^{\text{my\_rank}}\frac{k}{2^i}}$ and
+		my\_last\_i = $\ceil{\sum_{i=0}^{\text{my\_rank+1}}\frac{k}{2^i}}$ with the exception
+		for my\_rank$=(p-1)$ then my\_last\_i = n.
+		For example, if we had an infinite number of cores, $k=\frac{1}{2}$.
+		 
+	\end{addmargin}
+
+\end{document}
