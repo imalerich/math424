@@ -1,0 +1,64 @@
+\documentclass[12pt]{jhwhw}
+\author{Ian Malerich}
+\title{Math 424 - Lab 12}
+\usepackage{amssymb, amsfonts, mathtools, graphicx, breqn}
+\usepackage{minted, subfig, float, scrextend, setspace}
+\usemintedstyle{friendly}
+
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+
+\onehalfspacing
+\begin{document}
+\raggedright
+
+%% Chapter 2 starts on page 36
+%% Questions on Page 98
+
+\textbf{2.1}
+	When we were discussing floating point addition, we made the simplifying
+	assumptions that each of the functional units took the same amount of time.
+	Suppose that fetch and store each take 2 nanoseconds and the remaining
+	operations take 1 nanosecond.
+	\begin{enumerate}
+		\item How long does a floating point addition take with these assumptions?
+		\item How long will an unpipelined addition of 1000 pairs of floats take
+			with these assumptions?
+		\item How long will a pipelined addition of 1000 pairs of floats take with
+			these assumptions?
+		\item The time required for fetch and store may vary considerably if the 
+			operands/results are stored in different levels of the memory hierarchy. 
+			Suppose that a fetch from level 1 cache takes 2 nanoseconds,
+			while a fetch from level 2 cache takes 5 nanoseconds, and a fetch
+			from main memory takes 50 nanoseconds. What happens to the
+			pipeline when there is a level 1 cache miss on a fetch of one of the 
+			operands? What happens when there is a level 2 miss?
+	\end{enumerate}
+\textcolor[RGB]{240,240,240}{\rule{\textwidth}{0.5pt}}\bigbreak
+
+	%% Page 47
+	\begin{addmargin}[1em]{}
+		\begin{enumerate}
+			\item
+				Previously, we had 7 steps each taking 1 nanosecond for a total of 7
+				nanoseconds. Step 0 (fetch) now takes 2 nanoseconds, and 
+				step 6 (store) also takes 2 nanoseconds, bringing our total for
+				a single floating point addition to 9 nanoseconds.
+			\item
+				An unpipelined addition will take 9 nanoseconds per addition $\times 1000$ 
+				floating point additions, for a total of $9000$ nanoseconds.
+			\item
+				This situationn is more complex.
+			\item
+		\end{enumerate}
+	\end{addmargin}
+
+\bigbreak
+\textbf{2.2}
+	Explain how a queue, implemented in hardware in the CPU, could be used to improve 
+	the performance of a write-through cache.
+\textcolor[RGB]{240,240,240}{\rule{\textwidth}{0.5pt}}\bigbreak
+
+	\begin{addmargin}[1em]{}
+	\end{addmargin}
+
+\end{document}
