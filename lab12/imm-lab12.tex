@@ -12,7 +12,6 @@
 \raggedright
 
 %% Chapter 2 starts on page 36
-%% Questions on Page 98
 
 \textbf{2.1}
 	When we were discussing floating point addition, we made the simplifying
@@ -47,18 +46,57 @@
 				An unpipelined addition will take 9 nanoseconds per addition $\times 1000$ 
 				floating point additions, for a total of $9000$ nanoseconds.
 			\item
-				This situationn is more complex.
+				We are effectively only considered with when the last addition completes. That
+				is operation at index $999$. The $0$th fetch starts at $0$, and finishes at $2$,
+				the $1$st fetch starts at $2$ and ends at $4$, $2$nd at $4$ and ends at 
+				$6$, and so on,
+				thus fetch $i$ starts at $2i$ and ends at $2i+2$. Therefore, the $999$th fetch
+				will start at time $1998$ and end at $2000$. 
+				It's next 5 operations will be unblocked, as each 
+				only takes 1 nanosecond, thus the previous will be done before the $999$th 
+				addition needs it, thus the Round step will complete at time $2005$.
+				Again, it gets more complex when it's time to store, addition $0$ starts
+				store at time $7$ and completes at $9$. Thus addition $1$ will not start
+				addition until time $9$ and will complete at $11$, addition $2$ will
+				start at $11$ and complete at $13$ and so on. Generalizing this,
+				we find that addition $i$ will complete at $9 + 2i$. Therefore,
+				addition $999$ will complete at time $2007$.
+				\clearpage
 			\item
+				Fetching from level 1 cache taking 2 nanoseconds is exactly the situation
+				we just covered above. A level 1 cache miss of 5 nanoseconds offsets the next
+				fetch start by 3 nanoseconds, thus the total pipeline time will be 3 nanoseconds
+				longer than if all fetches took 2 nanoseconds. \\
+				Similarly, if a level 2 cache miss occurs of 50 nanoseconds, the total
+				time will be offset by 48 nanoseconds longer than it would have taken if
+				it only had taken 1 nanosecond to fetch from the cache.
 		\end{enumerate}
 	\end{addmargin}
 
 \bigbreak
-\textbf{2.2}
-	Explain how a queue, implemented in hardware in the CPU, could be used to improve 
-	the performance of a write-through cache.
+\textbf{2.3}
+	Recall the example involving cache reads of a two-dimensional array (page 22).
+	How does a larger matrix and a larger cache affect the performance of 
+	the two pairs of nested loops? What happens if MAX = 8 and the cache
+	can store four lines? How many misses occur in the reads of $A$ in the first pair
+	of nested loops? How many misses occur in the second pair?
 \textcolor[RGB]{240,240,240}{\rule{\textwidth}{0.5pt}}\bigbreak
 
 	\begin{addmargin}[1em]{}
+		When accessing in row major order, the results will be very similar, as we have
+		4 cache lines, and our matrix has 8 rows, that means our cache can store
+		up to half of the matrix at a time. Whenever the program starts a new row,
+		a cache miss occurs, the entire row is loaded into the cache, and the program
+		will continue without a cache miss until the next row is accessed. Thus,
+		there will be a total of 8 cache misses when accessing data in row major order. \\
+		\bigbreak
+		Things are much worse when accessing the cache in column major order. The first
+		4 fetches all hit cache misses, and load the first 4 rows into the cache. The program
+		continues onto row 5 (column 1) and again hits a cache miss loading that row into 
+		the cache. This trend continues, the cache continually stores the most recent 4
+		rows in the cache, but we always switch to a new row when accessing in column major
+		order, thus every single access generates a cache miss, for a total of $8\times 8=64$
+		cache misses.
 	\end{addmargin}
 
 \end{document}
