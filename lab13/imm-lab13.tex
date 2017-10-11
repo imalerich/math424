@@ -31,21 +31,36 @@
 	\end{addmargin}
 
 \textbf{3.2}
+	Modify the trapezoidal rule so that it will correctly estimate the integral
+	even if comm_sz doesn't evenly devide $n$. (You can still assume $n\geq$comm_sz.)
 \textcolor[RGB]{240,240,240}{\rule{\textwidth}{0.5pt}}\bigbreak
 
 	\begin{addmargin}[1em]{}
+		\inputminted{c}{3.2.c}
 	\end{addmargin}
 
 \textbf{3.3}
+	Determine which of the variables in the trapezoidal rule program are local and which 
+	are global.
 \textcolor[RGB]{240,240,240}{\rule{\textwidth}{0.5pt}}\bigbreak
 
 	\begin{addmargin}[1em]{}
+		MPI runs main $n$ times as specified on mpiexec, thus each process has it's own local copy
+		of all variables declared in main. Because we are not using any other values, they aren't
+		physically shared across each process. However, due to their setup, values such as 
+		\textit{a,b,h,local_n} will be equivalent across all processes (and are not changed by 
+		any processes) but are not technically global.
 	\end{addmargin}
 
+\clearpage
 \textbf{3.4}
+	Modify the program that just prints a line of output from each process (mpi_output.c) so
+	that the output is printed in process rank order: process 0s output first, then process 1s,
+	and so on.
 \textcolor[RGB]{240,240,240}{\rule{\textwidth}{0.5pt}}\bigbreak
 
 	\begin{addmargin}[1em]{}
+		\inputminted{c}{3.4.c}
 	\end{addmargin}
 
 \end{document}
