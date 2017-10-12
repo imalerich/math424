@@ -1,0 +1,51 @@
+\documentclass[12pt]{jhwhw}
+\author{Ian Malerich}
+\title{Math 424 - Lab 13}
+\usepackage{amssymb, amsfonts, mathtools, graphicx, breqn}
+\usepackage{minted, subfig, float, scrextend, setspace}
+\usemintedstyle{friendly}
+
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+
+\onehalfspacing
+\begin{document}
+\raggedright
+
+%% Chapter 3 starts on page 104
+%% Exercises start on page 161
+
+\textbf{3.1}
+	What happens in the greeting program if, instead of strlen(greeting)+1,
+	we use strlen(greeting) for the length of the message being sent
+	by processes $1,2,\ldots,$comm_sz-1? What happens if we use MAX_STRING instead?
+	Can you explain these results?
+\textcolor[RGB]{240,240,240}{\rule{\textwidth}{0.5pt}}\bigbreak
+
+	\begin{addmargin}[1em]{}
+		If we forget to add 1 to strlen(..) we are not sending the null terminating
+		character of the string in the message, thus there are no guarantees on
+		where the string will terminate when print it out in process 0. \\
+		If we use MAX_STRING, we are still sending the null terminator, thus
+		printf will work as expected, however this time we are simply sending
+		more data than is needed, including a bunch of garbage data after the string. \\
+	\end{addmargin}
+
+\textbf{3.2}
+\textcolor[RGB]{240,240,240}{\rule{\textwidth}{0.5pt}}\bigbreak
+
+	\begin{addmargin}[1em]{}
+	\end{addmargin}
+
+\textbf{3.3}
+\textcolor[RGB]{240,240,240}{\rule{\textwidth}{0.5pt}}\bigbreak
+
+	\begin{addmargin}[1em]{}
+	\end{addmargin}
+
+\textbf{3.4}
+\textcolor[RGB]{240,240,240}{\rule{\textwidth}{0.5pt}}\bigbreak
+
+	\begin{addmargin}[1em]{}
+	\end{addmargin}
+
+\end{document}
