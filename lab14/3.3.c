@@ -14,6 +14,8 @@ int sum(int * arr, int size) {
 	MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
 	MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
 
+	// choose the smallest size, larger than or equal to size
+	// which is a perfect multiple of comm_sz
 	int S = comm_sz * ceil(size/(float)comm_sz);
 	if (arr != NULL) {
 		// reallocate arr, and fill in some extra 0's
@@ -24,12 +26,15 @@ int sum(int * arr, int size) {
 		}
 	}
 
+	// scatter data between all processes
 	int count = S / comm_sz;
 	int * rec = malloc(sizeof(int) * count);
 	MPI_Scatter(arr, count, MPI_INT, rec, count, MPI_INT, 
 			ROOT, MPI_COMM_WORLD);
 
-	// add all of our elements together
+	// add the data we currently have together
+	// we will then either pass this result to another process
+	// or receive that result, and add it with our partial sum
 	int psum = 0;
 	for (int i=0; i<count; i++) {
 		psum += rec[i];
