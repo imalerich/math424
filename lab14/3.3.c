@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <math.h>
 #include <mpi.h>
 
 #define COUNT 8
@@ -13,7 +14,17 @@ int sum(int * arr, int size) {
 	MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
 	MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
 
-	int count = size / comm_sz;
+	int S = comm_sz * ceil(size/(float)comm_sz);
+	if (arr != NULL) {
+		// reallocate arr, and fill in some extra 0's
+		// that way we can evenly scatter it across all processes
+		arr = realloc(arr, S * sizeof(int));
+		for (int i=size; i<S; i++) {
+			arr[i] = 0;
+		}
+	}
+
+	int count = S / comm_sz;
 	int * rec = malloc(sizeof(int) * count);
 	MPI_Scatter(arr, count, MPI_INT, rec, count, MPI_INT, 
 			ROOT, MPI_COMM_WORLD);
@@ -25,11 +36,23 @@ int sum(int * arr, int size) {
 	}
 	free(rec);
 
-	for (int R = comm_sz / 2; R > 0; R /= 2) {
+	// if comm_sz is not a power of 2, the code below will break
+	// find the next largest power of 2, if a process should
+	// receive from a power of 2 which does not exist, it simply
+	// will do nothing for that iteration
+	
+	int CS2 = (int)ceil((float)log2(comm_sz));
+	CS2 = pow(2, CS2);
+
+	for (int R = CS2 / 2; R > 0; R /= 2) {
 		if (my_rank < R) {
- 			int recv = 0;
- 			MPI_Recv(&recv, 1, MPI_INT, my_rank+R, 0, MPI_COMM_WORLD, 0);
- 			psum += recv;
+			// if the process we should wait for exists
+			if (my_rank+R < comm_sz) {
+				int recv = 0;
+				MPI_Recv(&recv, 1, MPI_INT, my_rank+R, 0, MPI_COMM_WORLD, 0);
+				psum += recv;
+			} // else we have do nothing
+
 		} else {
  			MPI_Send(&psum, 1, MPI_INT, my_rank - R, 0, MPI_COMM_WORLD);
  			return psum;
