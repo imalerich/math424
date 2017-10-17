@@ -1,0 +1,68 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <mpi.h>
+
+#define COUNT 8
+#define ROOT 0
+#define MAX_RAND 4
+
+int sum(int * arr, int size) {
+	int comm_sz, my_rank;
+	MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
+	MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+
+	int count = size / comm_sz;
+	int * rec = malloc(sizeof(int) * count);
+	MPI_Scatter(arr, count, MPI_INT, rec, count, MPI_INT, 
+			ROOT, MPI_COMM_WORLD);
+
+	// add all of our elements together
+	int psum = 0;
+	for (int i=0; i<count; i++) {
+		psum += rec[i];
+	}
+	free(rec);
+
+	for (int R = comm_sz / 2; R > 0; R /= 2) {
+		if (my_rank < R) {
+ 			int recv = 0;
+ 			MPI_Recv(&recv, 1, MPI_INT, my_rank+R, 0, MPI_COMM_WORLD, 0);
+ 			psum += recv;
+		} else {
+ 			MPI_Send(&psum, 1, MPI_INT, my_rank - R, 0, MPI_COMM_WORLD);
+ 			return psum;
+		}
+	}
+
+	return psum;
+}
+
+int main(int argc, char ** argv) {
+	srand(time(NULL));
+
+	int my_rank;
+	MPI_Init(NULL, NULL);
+	MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+
+	int * arr = NULL;
+	if (my_rank == ROOT) {
+		// initialize a random array
+		arr = malloc(sizeof(int) * COUNT);
+		printf("[");
+		for (int i=0; i<COUNT; i++) {
+			arr[i] = rand() % MAX_RAND;
+			printf("%d ", arr[i]);
+		}
+		printf("]\n");
+	}
+
+	int s = sum(arr, COUNT);
+	if (my_rank == ROOT) {
+		printf("Sum = %d\n", s);
+	}
+
+	MPI_Finalize();
+	return 0;
+}

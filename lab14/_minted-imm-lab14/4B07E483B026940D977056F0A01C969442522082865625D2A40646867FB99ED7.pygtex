@@ -1,0 +1,164 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{c+cp}{\PYGZsh{}include} \PYG{c+cpf}{\PYGZlt{}stdio.h\PYGZgt{}}
+\PYG{c+cp}{\PYGZsh{}include} \PYG{c+cpf}{\PYGZlt{}stdlib.h\PYGZgt{}}
+\PYG{c+cp}{\PYGZsh{}include} \PYG{c+cpf}{\PYGZlt{}string.h\PYGZgt{}}
+\PYG{c+cp}{\PYGZsh{}include} \PYG{c+cpf}{\PYGZlt{}mpi.h\PYGZgt{}}
+
+\PYG{c+cp}{\PYGZsh{}define ROOT 0}
+
+\PYG{c+c1}{// prints a vector inline to the standard output}
+\PYG{k+kt}{void} \PYG{n+nf}{print\PYGZus{}vec}\PYG{p}{(}\PYG{k+kt}{float} \PYG{o}{*} \PYG{n}{vec}\PYG{p}{,} \PYG{k+kt}{size\PYGZus{}t} \PYG{n}{count}\PYG{p}{);}
+
+\PYG{c+c1}{// only returns actual result to \PYGZsq{}root\PYGZsq{} process, all others receive 0}
+\PYG{k+kt}{float} \PYG{n+nf}{vec\PYGZus{}dot\PYGZus{}prod}\PYG{p}{(}\PYG{k+kt}{float} \PYG{o}{*} \PYG{n}{a}\PYG{p}{,} \PYG{k+kt}{float} \PYG{o}{*} \PYG{n}{b}\PYG{p}{,} \PYG{k+kt}{int} \PYG{n}{vcount}\PYG{p}{,} \PYG{k+kt}{int} \PYG{n}{root}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+	\PYG{k+kt}{int} \PYG{n}{comm\PYGZus{}sz}\PYG{p}{;}
+	\PYG{n}{MPI\PYGZus{}Comm\PYGZus{}size}\PYG{p}{(}\PYG{n}{MPI\PYGZus{}COMM\PYGZus{}WORLD}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{comm\PYGZus{}sz}\PYG{p}{);}
+
+	\PYG{k+kt}{float} \PYG{o}{*} \PYG{n}{reca}\PYG{p}{,} \PYG{o}{*} \PYG{n}{recb}\PYG{p}{;} \PYG{c+c1}{// received vectors by all processes}
+
+	\PYG{c+cm}{/* \PYGZhy{}\PYGZhy{}\PYGZhy{} SYNC DATA BETWEEN PROCESSES. \PYGZhy{}\PYGZhy{}\PYGZhy{} */}
+	\PYG{n}{MPI\PYGZus{}Bcast}\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{vcount}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{MPI\PYGZus{}INT}\PYG{p}{,} \PYG{n}{root}\PYG{p}{,} \PYG{n}{MPI\PYGZus{}COMM\PYGZus{}WORLD}\PYG{p}{);}
+	\PYG{k+kt}{int} \PYG{n}{count} \PYG{o}{=} \PYG{n}{vcount} \PYG{o}{/} \PYG{n}{comm\PYGZus{}sz}\PYG{p}{;}
+	\PYG{n}{reca} \PYG{o}{=} \PYG{n}{malloc}\PYG{p}{(}\PYG{k}{sizeof}\PYG{p}{(}\PYG{k+kt}{float}\PYG{p}{)} \PYG{o}{*} \PYG{n}{count}\PYG{p}{);}
+	\PYG{n}{recb} \PYG{o}{=} \PYG{n}{malloc}\PYG{p}{(}\PYG{k}{sizeof}\PYG{p}{(}\PYG{k+kt}{float}\PYG{p}{)} \PYG{o}{*} \PYG{n}{count}\PYG{p}{);}
+
+	\PYG{n}{MPI\PYGZus{}Scatter}\PYG{p}{(}\PYG{n}{a}\PYG{p}{,} \PYG{n}{count}\PYG{p}{,} \PYG{n}{MPI\PYGZus{}FLOAT}\PYG{p}{,} \PYG{n}{reca}\PYG{p}{,} \PYG{n}{count}\PYG{p}{,} \PYG{n}{MPI\PYGZus{}FLOAT}\PYG{p}{,} 
+			\PYG{n}{root}\PYG{p}{,} \PYG{n}{MPI\PYGZus{}COMM\PYGZus{}WORLD}\PYG{p}{);}
+	\PYG{n}{MPI\PYGZus{}Scatter}\PYG{p}{(}\PYG{n}{b}\PYG{p}{,} \PYG{n}{count}\PYG{p}{,} \PYG{n}{MPI\PYGZus{}FLOAT}\PYG{p}{,} \PYG{n}{recb}\PYG{p}{,} \PYG{n}{count}\PYG{p}{,} \PYG{n}{MPI\PYGZus{}FLOAT}\PYG{p}{,} 
+			\PYG{n}{root}\PYG{p}{,} \PYG{n}{MPI\PYGZus{}COMM\PYGZus{}WORLD}\PYG{p}{);}
+
+	\PYG{c+cm}{/* \PYGZhy{}\PYGZhy{}\PYGZhy{} COMPUTE PARTIAL SUM OF DOT PRODUCT. \PYGZhy{}\PYGZhy{}\PYGZhy{} */}
+	\PYG{k+kt}{float} \PYG{n}{dot} \PYG{o}{=} \PYG{l+m+mi}{0}\PYG{p}{;}
+	\PYG{k}{for} \PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{i}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{;} \PYG{n}{i}\PYG{o}{\PYGZlt{}}\PYG{n}{count}\PYG{p}{;} \PYG{n}{i}\PYG{o}{++}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+		\PYG{n}{dot} \PYG{o}{+=} \PYG{n}{reca}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]} \PYG{o}{*} \PYG{n}{recb}\PYG{p}{[}\PYG{n}{i}\PYG{p}{];}
+	\PYG{p}{\PYGZcb{}}
+
+	\PYG{c+cm}{/* \PYGZhy{}\PYGZhy{}\PYGZhy{} COMPUTE FINAL DOT PRODUCT BY REDUCING DOT. \PYGZhy{}\PYGZhy{}\PYGZhy{} */}
+	\PYG{k+kt}{float} \PYG{n}{dot\PYGZus{}sum} \PYG{o}{=} \PYG{l+m+mi}{0}\PYG{p}{;}
+	\PYG{n}{MPI\PYGZus{}Reduce}\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{dot}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{dot\PYGZus{}sum}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{MPI\PYGZus{}FLOAT}\PYG{p}{,} \PYG{n}{MPI\PYGZus{}SUM}\PYG{p}{,} 
+			\PYG{n}{root}\PYG{p}{,} \PYG{n}{MPI\PYGZus{}COMM\PYGZus{}WORLD}\PYG{p}{);}
+	\PYG{n}{free}\PYG{p}{(}\PYG{n}{reca}\PYG{p}{);}
+	\PYG{n}{free}\PYG{p}{(}\PYG{n}{recb}\PYG{p}{);}
+	\PYG{k}{return} \PYG{n}{dot\PYGZus{}sum}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{c+c1}{// only returns data to the \PYGZsq{}root\PYGZsq{} process, all other processes receive NULL}
+\PYG{k+kt}{float} \PYG{o}{*} \PYG{n+nf}{scalar\PYGZus{}mul}\PYG{p}{(}\PYG{k+kt}{float} \PYG{n}{s}\PYG{p}{,} \PYG{k+kt}{float} \PYG{o}{*} \PYG{n}{vec}\PYG{p}{,} \PYG{k+kt}{int} \PYG{n}{vcount}\PYG{p}{,} \PYG{k+kt}{int} \PYG{n}{root}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+	\PYG{k+kt}{int} \PYG{n}{comm\PYGZus{}sz}\PYG{p}{,} \PYG{n}{my\PYGZus{}rank}\PYG{p}{;}
+	\PYG{n}{MPI\PYGZus{}Comm\PYGZus{}size}\PYG{p}{(}\PYG{n}{MPI\PYGZus{}COMM\PYGZus{}WORLD}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{comm\PYGZus{}sz}\PYG{p}{);}
+	\PYG{n}{MPI\PYGZus{}Comm\PYGZus{}rank}\PYG{p}{(}\PYG{n}{MPI\PYGZus{}COMM\PYGZus{}WORLD}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{my\PYGZus{}rank}\PYG{p}{);}
+
+	\PYG{c+cm}{/* \PYGZhy{}\PYGZhy{}\PYGZhy{} SYNC DATA BETWEEN PROCESSES. \PYGZhy{}\PYGZhy{}\PYGZhy{} */}
+	\PYG{n}{MPI\PYGZus{}Bcast}\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{vcount}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{MPI\PYGZus{}INT}\PYG{p}{,} \PYG{n}{root}\PYG{p}{,} \PYG{n}{MPI\PYGZus{}COMM\PYGZus{}WORLD}\PYG{p}{);}
+	\PYG{k+kt}{int} \PYG{n}{count} \PYG{o}{=} \PYG{n}{vcount} \PYG{o}{/} \PYG{n}{comm\PYGZus{}sz}\PYG{p}{;}
+	\PYG{k+kt}{float} \PYG{o}{*} \PYG{n}{rec} \PYG{o}{=} \PYG{n}{malloc}\PYG{p}{(}\PYG{k}{sizeof}\PYG{p}{(}\PYG{k+kt}{float}\PYG{p}{)} \PYG{o}{*} \PYG{n}{count}\PYG{p}{);}
+	\PYG{n}{MPI\PYGZus{}Scatter}\PYG{p}{(}\PYG{n}{vec}\PYG{p}{,} \PYG{n}{count}\PYG{p}{,} \PYG{n}{MPI\PYGZus{}FLOAT}\PYG{p}{,} \PYG{n}{rec}\PYG{p}{,} \PYG{n}{count}\PYG{p}{,} \PYG{n}{MPI\PYGZus{}FLOAT}\PYG{p}{,} 
+			\PYG{n}{root}\PYG{p}{,} \PYG{n}{MPI\PYGZus{}COMM\PYGZus{}WORLD}\PYG{p}{);}
+	\PYG{n}{MPI\PYGZus{}Bcast}\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{s}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{MPI\PYGZus{}FLOAT}\PYG{p}{,} \PYG{n}{root}\PYG{p}{,} \PYG{n}{MPI\PYGZus{}COMM\PYGZus{}WORLD}\PYG{p}{);}
+
+	\PYG{c+cm}{/* \PYGZhy{}\PYGZhy{}\PYGZhy{} COMPUTE THE MULTIPLICATION, THEN GATHER THE RESULTS \PYGZhy{}\PYGZhy{}\PYGZhy{} */}
+	\PYG{k}{for} \PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{i}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{;} \PYG{n}{i}\PYG{o}{\PYGZlt{}}\PYG{n}{count}\PYG{p}{;} \PYG{n}{i}\PYG{o}{++}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+		\PYG{n}{rec}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]} \PYG{o}{*=} \PYG{n}{s}\PYG{p}{;}
+	\PYG{p}{\PYGZcb{}}
+
+	\PYG{k+kt}{float} \PYG{o}{*} \PYG{n}{ret} \PYG{o}{=} \PYG{p}{(}\PYG{n}{my\PYGZus{}rank} \PYG{o}{==} \PYG{n}{root}\PYG{p}{)} \PYG{o}{?} \PYG{n}{malloc}\PYG{p}{(}\PYG{k}{sizeof}\PYG{p}{(}\PYG{k+kt}{float}\PYG{p}{)} \PYG{o}{*} \PYG{n}{vcount}\PYG{p}{)} \PYG{o}{:} \PYG{n+nb}{NULL}\PYG{p}{;}
+	\PYG{n}{MPI\PYGZus{}Gather}\PYG{p}{(}\PYG{n}{rec}\PYG{p}{,} \PYG{n}{count}\PYG{p}{,} \PYG{n}{MPI\PYGZus{}FLOAT}\PYG{p}{,} \PYG{n}{ret}\PYG{p}{,} \PYG{n}{count}\PYG{p}{,} \PYG{n}{MPI\PYGZus{}FLOAT}\PYG{p}{,} 
+			\PYG{n}{root}\PYG{p}{,} \PYG{n}{MPI\PYGZus{}COMM\PYGZus{}WORLD}\PYG{p}{);}
+
+	\PYG{n}{free}\PYG{p}{(}\PYG{n}{rec}\PYG{p}{);}
+	\PYG{k}{return} \PYG{n}{ret}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{k+kt}{int} \PYG{n+nf}{main}\PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{argc}\PYG{p}{,} \PYG{k+kt}{char} \PYG{o}{**} \PYG{n}{argv}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+	\PYG{k+kt}{int} \PYG{n}{comm\PYGZus{}sz}\PYG{p}{,} \PYG{n}{my\PYGZus{}rank}\PYG{p}{;}
+
+	\PYG{c+c1}{// These will be read by vcount}
+	\PYG{k+kt}{float} \PYG{n}{s}\PYG{p}{;}
+	\PYG{k+kt}{float} \PYG{o}{*} \PYG{n}{veca}\PYG{p}{,} \PYG{o}{*} \PYG{n}{vecb}\PYG{p}{;} \PYG{c+c1}{// vectors read by process 0}
+	\PYG{k+kt}{int} \PYG{n}{vcount}\PYG{p}{;}
+
+	\PYG{n}{MPI\PYGZus{}Init}\PYG{p}{(}\PYG{n+nb}{NULL}\PYG{p}{,} \PYG{n+nb}{NULL}\PYG{p}{);}
+	\PYG{n}{MPI\PYGZus{}Comm\PYGZus{}size}\PYG{p}{(}\PYG{n}{MPI\PYGZus{}COMM\PYGZus{}WORLD}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{comm\PYGZus{}sz}\PYG{p}{);}
+	\PYG{n}{MPI\PYGZus{}Comm\PYGZus{}rank}\PYG{p}{(}\PYG{n}{MPI\PYGZus{}COMM\PYGZus{}WORLD}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{my\PYGZus{}rank}\PYG{p}{);}
+
+	\PYG{c+cm}{/* \PYGZhy{}\PYGZhy{}\PYGZhy{} READ THE VECTORS AND SCALAR VALUE. \PYGZhy{}\PYGZhy{}\PYGZhy{} */}
+	\PYG{k}{if} \PYG{p}{(}\PYG{n}{my\PYGZus{}rank} \PYG{o}{==} \PYG{n}{ROOT}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+		\PYG{n}{printf}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}Enter the size of each vector (must be a multiple of \PYGZpc{}d): \PYGZdq{}}\PYG{p}{,} 
+				\PYG{n}{comm\PYGZus{}sz}\PYG{p}{);}
+		\PYG{n}{fflush}\PYG{p}{(}\PYG{n}{stdout}\PYG{p}{);}
+		\PYG{n}{scanf}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}\PYGZpc{}d\PYGZdq{}}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{vcount}\PYG{p}{);}
+
+		\PYG{n}{veca} \PYG{o}{=} \PYG{n}{malloc}\PYG{p}{(}\PYG{k}{sizeof}\PYG{p}{(}\PYG{k+kt}{float}\PYG{p}{)} \PYG{o}{*} \PYG{n}{vcount}\PYG{p}{);}
+		\PYG{n}{vecb} \PYG{o}{=} \PYG{n}{malloc}\PYG{p}{(}\PYG{k}{sizeof}\PYG{p}{(}\PYG{k+kt}{float}\PYG{p}{)} \PYG{o}{*} \PYG{n}{vcount}\PYG{p}{);}
+
+		\PYG{k}{for} \PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{i}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{;} \PYG{n}{i}\PYG{o}{\PYGZlt{}}\PYG{n}{vcount}\PYG{p}{;} \PYG{n}{i}\PYG{o}{++}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+			\PYG{n}{printf}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}A[\PYGZpc{}d]: \PYGZdq{}}\PYG{p}{,} \PYG{n}{i}\PYG{p}{);}
+			\PYG{n}{fflush}\PYG{p}{(}\PYG{n}{stdout}\PYG{p}{);}
+			\PYG{n}{scanf}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}\PYGZpc{}f\PYGZdq{}}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{veca}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]);}
+		\PYG{p}{\PYGZcb{}}
+
+		\PYG{n}{printf}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s}{\PYGZdq{}}\PYG{p}{);}
+		\PYG{k}{for} \PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{i}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{;} \PYG{n}{i}\PYG{o}{\PYGZlt{}}\PYG{n}{vcount}\PYG{p}{;} \PYG{n}{i}\PYG{o}{++}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+			\PYG{n}{printf}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}B[\PYGZpc{}d]: \PYGZdq{}}\PYG{p}{,} \PYG{n}{i}\PYG{p}{);}
+			\PYG{n}{fflush}\PYG{p}{(}\PYG{n}{stdout}\PYG{p}{);}
+			\PYG{n}{scanf}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}\PYGZpc{}f\PYGZdq{}}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{vecb}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]);}
+		\PYG{p}{\PYGZcb{}}
+
+		\PYG{n}{printf}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s}{Enter a scalar value: \PYGZdq{}}\PYG{p}{);}
+		\PYG{n}{fflush}\PYG{p}{(}\PYG{n}{stdout}\PYG{p}{);}
+		\PYG{n}{scanf}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}\PYGZpc{}f\PYGZdq{}}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{s}\PYG{p}{);}
+	\PYG{p}{\PYGZcb{}}
+	
+	\PYG{c+cm}{/* \PYGZhy{}\PYGZhy{}\PYGZhy{} PERFORM COMPUTATIONS. \PYGZhy{}\PYGZhy{}\PYGZhy{} */}
+	\PYG{k+kt}{float} \PYG{n}{dot} \PYG{o}{=} \PYG{n}{vec\PYGZus{}dot\PYGZus{}prod}\PYG{p}{(}\PYG{n}{veca}\PYG{p}{,} \PYG{n}{vecb}\PYG{p}{,} \PYG{n}{vcount}\PYG{p}{,} \PYG{n}{ROOT}\PYG{p}{);}
+	\PYG{k+kt}{float} \PYG{o}{*} \PYG{n}{s\PYGZus{}times\PYGZus{}veca} \PYG{o}{=} \PYG{n}{scalar\PYGZus{}mul}\PYG{p}{(}\PYG{n}{s}\PYG{p}{,} \PYG{n}{veca}\PYG{p}{,} \PYG{n}{vcount}\PYG{p}{,} \PYG{n}{ROOT}\PYG{p}{);}
+	\PYG{k+kt}{float} \PYG{o}{*} \PYG{n}{s\PYGZus{}times\PYGZus{}vecb} \PYG{o}{=} \PYG{n}{scalar\PYGZus{}mul}\PYG{p}{(}\PYG{n}{s}\PYG{p}{,} \PYG{n}{vecb}\PYG{p}{,} \PYG{n}{vcount}\PYG{p}{,} \PYG{n}{ROOT}\PYG{p}{);}
+
+	\PYG{c+cm}{/* \PYGZhy{}\PYGZhy{}\PYGZhy{} OUTPUT THE RESULTS. \PYGZhy{}\PYGZhy{}\PYGZhy{} */}
+	\PYG{k}{if} \PYG{p}{(}\PYG{n}{my\PYGZus{}rank} \PYG{o}{==} \PYG{n}{ROOT}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+		\PYG{c+c1}{// First, dot product results}
+		\PYG{n}{printf}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s}{\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZdq{}}
+				\PYG{l+s}{\PYGZdq{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s}{\PYGZdq{}}\PYG{p}{);}
+		\PYG{n}{print\PYGZus{}vec}\PYG{p}{(}\PYG{n}{veca}\PYG{p}{,} \PYG{n}{vcount}\PYG{p}{);}
+		\PYG{n}{printf}\PYG{p}{(}\PYG{l+s}{\PYGZdq{} dot \PYGZdq{}}\PYG{p}{);}
+		\PYG{n}{print\PYGZus{}vec}\PYG{p}{(}\PYG{n}{vecb}\PYG{p}{,} \PYG{n}{vcount}\PYG{p}{);}
+		\PYG{n}{printf}\PYG{p}{(}\PYG{l+s}{\PYGZdq{} = \PYGZpc{}f}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s}{\PYGZdq{}}\PYG{p}{,} \PYG{n}{dot}\PYG{p}{);}
+
+		\PYG{n}{printf}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s}{\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZdq{}}
+				\PYG{l+s}{\PYGZdq{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s}{\PYGZdq{}}\PYG{p}{);}
+		\PYG{n}{printf}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}\PYGZpc{}f x \PYGZdq{}}\PYG{p}{,} \PYG{n}{s}\PYG{p}{);}
+		\PYG{n}{print\PYGZus{}vec}\PYG{p}{(}\PYG{n}{veca}\PYG{p}{,} \PYG{n}{vcount}\PYG{p}{);}
+		\PYG{n}{printf}\PYG{p}{(}\PYG{l+s}{\PYGZdq{} = \PYGZdq{}}\PYG{p}{);}
+		\PYG{n}{print\PYGZus{}vec}\PYG{p}{(}\PYG{n}{s\PYGZus{}times\PYGZus{}veca}\PYG{p}{,} \PYG{n}{vcount}\PYG{p}{);}
+		\PYG{n}{printf}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s}{\PYGZdq{}}\PYG{p}{);}
+
+		\PYG{n}{printf}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s}{\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZdq{}}
+				\PYG{l+s}{\PYGZdq{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s}{\PYGZdq{}}\PYG{p}{);}
+		\PYG{n}{printf}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}\PYGZpc{}f x \PYGZdq{}}\PYG{p}{,} \PYG{n}{s}\PYG{p}{);}
+		\PYG{n}{print\PYGZus{}vec}\PYG{p}{(}\PYG{n}{vecb}\PYG{p}{,} \PYG{n}{vcount}\PYG{p}{);}
+		\PYG{n}{printf}\PYG{p}{(}\PYG{l+s}{\PYGZdq{} = \PYGZdq{}}\PYG{p}{);}
+		\PYG{n}{print\PYGZus{}vec}\PYG{p}{(}\PYG{n}{s\PYGZus{}times\PYGZus{}vecb}\PYG{p}{,} \PYG{n}{vcount}\PYG{p}{);}
+		\PYG{n}{printf}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s}{\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZdq{}}
+				\PYG{l+s}{\PYGZdq{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s}{\PYGZdq{}}\PYG{p}{);}
+
+		\PYG{n}{fflush}\PYG{p}{(}\PYG{n}{stdout}\PYG{p}{);}
+	\PYG{p}{\PYGZcb{}}
+
+	\PYG{k}{if} \PYG{p}{(}\PYG{n}{my\PYGZus{}rank} \PYG{o}{==} \PYG{n}{ROOT}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+		\PYG{n}{free}\PYG{p}{(}\PYG{n}{s\PYGZus{}times\PYGZus{}veca}\PYG{p}{);}
+		\PYG{n}{free}\PYG{p}{(}\PYG{n}{s\PYGZus{}times\PYGZus{}vecb}\PYG{p}{);}
+	\PYG{p}{\PYGZcb{}}
+
+	\PYG{n}{MPI\PYGZus{}Finalize}\PYG{p}{();}
+	\PYG{k}{return} \PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{k+kt}{void} \PYG{n+nf}{print\PYGZus{}vec}\PYG{p}{(}\PYG{k+kt}{float} \PYG{o}{*} \PYG{n}{vec}\PYG{p}{,} \PYG{k+kt}{size\PYGZus{}t} \PYG{n}{count}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+	\PYG{n}{printf}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}[\PYGZdq{}}\PYG{p}{);}
+	\PYG{k}{for} \PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{i}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{;} \PYG{n}{i}\PYG{o}{\PYGZlt{}}\PYG{n}{count}\PYG{p}{;} \PYG{n}{i}\PYG{o}{++}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+		\PYG{n}{printf}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}\PYGZpc{}.1f\PYGZdq{}}\PYG{p}{,} \PYG{n}{vec}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]);}
+		\PYG{k}{if} \PYG{p}{(}\PYG{n}{i} \PYG{o}{!=} \PYG{n}{count}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{)} \PYG{p}{\PYGZob{}} \PYG{n}{printf}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}, \PYGZdq{}}\PYG{p}{);} \PYG{p}{\PYGZcb{}}
+	\PYG{p}{\PYGZcb{}}
+	\PYG{n}{printf}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}]\PYGZdq{}}\PYG{p}{);}
+\PYG{p}{\PYGZcb{}}
+\end{Verbatim}

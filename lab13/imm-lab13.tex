@@ -52,12 +52,18 @@
 		any processes) but are not technically global.
 	\end{addmargin}
 
-\clearpage
 \textbf{3.4}
 	Modify the program that just prints a line of output from each process (mpi_output.c) so
 	that the output is printed in process rank order: process 0s output first, then process 1s,
 	and so on.
 \textcolor[RGB]{240,240,240}{\rule{\textwidth}{0.5pt}}\bigbreak
+
+	We could follow the strategy provided by the hello world mpi example. Where
+	only my_rank 0 does the printing and all others send that process strings. But
+	if we want each process to invoke printf, we can control the timing by
+	using MPI_Recv to cause a process to wait until the previous process is done
+	printing, once that process is done printing, it will invoke MPI_Send to let
+	the next process know it's okay to print.
 
 	\begin{addmargin}[1em]{}
 		\inputminted{c}{3.4.c}
