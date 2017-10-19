@@ -1,0 +1,35 @@
+\documentclass[12pt]{jhwhw}
+\author{Ian Malerich}
+\title{Math 424 - Lab 15}
+\usepackage{amssymb, amsfonts, mathtools, graphicx, breqn, subfig}
+\usepackage{minted, subfig, float, scrextend, setspace}
+\usemintedstyle{friendly}
+
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+
+\onehalfspacing
+\begin{document}
+\raggedright
+
+%% Chapter 3 starts on page 104
+%% Exercises start on page 161
+
+\textbf{3.13}
+	\textit{MPI_Scatter} and \textit{MPI_Gather} have the limitation that each process must send
+	or receive the same number of data items. When this is not the case, we must use
+	the MPI functions \textit{MPI_Gatherv} and \textit{MPI_Scatterv}. Look at the man pages
+	for these functions, and modify your vector sum, dot product program so
+	that it can correctly handle the case when n isn't evenly divisible by \textit{comm_sz}.
+\textcolor[RGB]{240,240,240}{\rule{\textwidth}{0.5pt}}\bigbreak
+
+	\begin{addmargin}[1em]{}
+	\end{addmargin}
+
+\textbf{3.20}
+	TODO
+\textcolor[RGB]{240,240,240}{\rule{\textwidth}{0.5pt}}\bigbreak
+
+	\begin{addmargin}[1em]{}
+	\end{addmargin}
+
+\end{document}
