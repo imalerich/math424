@@ -5,6 +5,19 @@
 
 #define ROOT 0
 
+/**
+ * @file 3.13
+ * @author Ian Malerich
+ *
+ * MPI_Scatter and MPI_Gather have the limitation that each
+ * process must sennd or receive the same number of items.
+ * When this is not the case, we must use the MPI functions 
+ * MPI_Gatherv and MPI_Scatterv. Look at the man pages for these
+ * functions, and modiy your vector sum, dot product
+ * program so that it can correctly handle the case when n
+ * isn't evenly divisible by comm_sz.
+ */
+
 // prints a vector inline to the standard output
 void print_vec(float * vec, size_t count);
 

@@ -1,33 +1,15 @@
-/* File:     mpi_trap2.c
- * Purpose:  Use MPI to implement a parallel version of the trapezoidal 
- *           rule.  This version accepts input of the endpoints of the
- *           interval and the number of trapezoids.
- *
- * Input:    The endpoints of the interval of integration and the number
- *           of trapezoids
- * Output:   Estimate of the integral from a to b of f(x)
- *           using the trapezoidal rule and n trapezoids.
- *
- * Compile:  mpicc -g -Wall -o mpi_trap2 mpi_trap2.c
- * Run:      mpiexec -n <number of processes> ./mpi_trap2
- *
- * Algorithm:
- *    1.  Each process calculates "its" interval of
- *        integration.
- *    2.  Each process estimates the integral of f(x)
- *        over its interval using the trapezoidal rule.
- *    3a. Each process != 0 sends its integral to 0.
- *    3b. Process 0 sums the calculations received from
- *        the individual processes and prints the result.
- *
- * Note:  f(x) is all hardwired.
- *
- * IPP:   Section 3.3.2  (pp. 100 and ff.)
- */
 #include <stdio.h>
 
 /* We'll be using MPI routines, definitions, etc. */
 #include <mpi.h>
+
+/**
+ * @file 3.13
+ *
+ * Write another Get_input function for the trapezoidal rule
+ * program. This one should use MPI_Pack on process 0 and 
+ * MPI_Unpack on the other processes.
+ */
 
 /* Get the input values */
 void Get_input(int my_rank, int comm_sz, double* a_p, double* b_p,
