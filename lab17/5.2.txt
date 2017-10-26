@@ -1,0 +1,26 @@
+A ran my script (5.2.sh) which runs for thread count equal to
+the number of trapezoids, for every n from 10 to 100.
+I started at 10 to make sure the estimate (if done correctly)
+should in theory be somewhat accurate.
+
+If two threads try to write to the global sum at the same time,
+issues occered. When running my script I found a number of such
+instances of this occurring.
+
+Actual result should be 0.33333
+
+n = 10 gave 0.2566
+(but then n = 11 did very well at 0.347)
+n = 15 gave 0.2800
+n = 51 gave 0.2839
+n = 91 gave 0.2782
+
+As you can see these are fairly spread out and seem to randnomly
+occur. It depends on when scheduling happens to occur relative
+to threads.
+
+The more trapezoids I use, the less impactful a failed write back
+will be.
+
+Conversely, the more threads I use the more likely a failed
+write back is to occur.
