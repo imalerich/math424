@@ -1,0 +1,51 @@
+## omp_trap2a
+(a) one thread and a large value of n
+--------------
+./omp_trap2a 1
+0 1 100000000
+--------------
+
+1.330922 seconds
+
+(b) two threads and the same value of n
+--------------
+./omp_trap2a 2
+0 1 100000000
+--------------
+
+0.667166 seconds
+
+## omp_trap2b
+(a) one thread and a large value of n
+--------------
+./omp_trap2b 1
+0 1 100000000
+--------------
+
+1.364856 seconds
+
+(b) two threads and the same value of n
+--------------
+./omp_trap2b 2
+0 1 100000000
+--------------
+
+0.000701 seconds
+
+## What happens? Explain the difference.
+
+1 thread vs 2 threads on omp_trap2a has an improvement of 1.9949
+1 thread vs 2 threads on omp_trap2b has an improvement of 1947.0
+
+Obviously omp_trap2b performs much better, that is, using the reduction
+rather than a parallel for performs better. The key feature to note here
+is the use of the reduction, 2a spawns two threads each who run through
+half of the loop iterations, but as they do so they are constantly waiting
+for each other in the critical section so that only one is writing at a time.
+In the worst case, each thread alternates in this critical section resulting
+in near single thread performance. This is vastly different than the reduction
+which doesn't need the critical code, this is because the reduction will keep
+local results which perform half of their corresponding global sum, these
+are then added together at the end, guaranteeing only one stop that needs
+a critical section (the final addition). This maximizes the work that each
+thread can do independently of the others.
