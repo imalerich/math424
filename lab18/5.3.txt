@@ -1,0 +1,56 @@
+## 5.3
+
+## (a) Which variables should be private, and which should be shared?
+
+'j' must be private as each process will run it's own inner for loop
+'count' must be private is each process separately counts values
+	less then their assigned value at index i
+	
+we are doing a parallel for loop over 'i' so no change is needed there
+'tmp' must be shared as each iteration writes back to this shared array
+	in order to produce the result, note that each iteration has a single
+	value it is placing, and each value will be assigned a unique position
+	in the arrray (it's sorted position) therefore we will not need
+	any critical section when writing to the 'tmp' array
+
+## (b) Are there any loop carried dependencies?
+
+No. We only write to count and tmp, where count is private and thus
+accon create a dependency. As mentioned when we write to tmp, we
+are writing to an index (sorted index) unique to the current loop
+id (i). Therefore we can write to this location in memory without 
+any fear of any other process having to write to that location first.
+
+Further, since we only READ from the input array 'a', there are no 
+dependencies there either as 'a' is constant will never change (until
+the algorithm completes).
+
+## (c) Can we modify memcpy so that it runs in parallel.
+
+Yes, memcpy simply copies a buffer of data into a new location for a
+given size of data. To do this in parallel, run a parallel for loop
+over each index, read from the source array then write to the corresponding
+location in the destination array. Note that each read and write
+is independent from all other processes, so no critical sections or
+dependencies are needed.
+
+## (d) Write a parallel implementation of Count_sort.
+
+See '5.3.c'
+
+## (e) How does performance compare between serial/parallel Count_sort, as well
+	as the built in qsort.
+
+Running the alogrithm for n = 100,000 (4 threads).
+Serial Count Sort takes 0.678074 seconds.
+Parallel Count Sort takes 0.315072 seconds.
+Quick Sort takes 0.001723 seconds.
+
+Clearly we have a nice improvement over the serial with our parallel implementation.
+We are over twice as fast (though using 4x as many threads), however parallel 
+algorithm is still based on an O(n^2) time approach, where as quick sort runs
+in O(nlog(n)) which clearly shows its speed in this example, further a quick sort
+can be implemented in place without any need of additional memory where as our 
+Count Sort requires a second copy of the array as well as the final copy operation
+all which contribute small additions to the total execution time. Though of course
+the main culprit is the O(nlog(n)) scalability of quick sort.
