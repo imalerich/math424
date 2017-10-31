@@ -39,6 +39,7 @@ int main(int argc, char* argv[]) {
    if (n % thread_count != 0) Usage(argv[0]);
 
    global_result = 0.0;
+   double start = omp_get_wtime();
 #  pragma omp parallel num_threads(thread_count) 
    {
       double my_result = 0.0;
@@ -47,9 +48,12 @@ int main(int argc, char* argv[]) {
       global_result += my_result;
    }
 
+   double end = omp_get_wtime();
+
    printf("With n = %d trapezoids, our estimate\n", n);
    printf("of the integral from %f to %f = %.14e\n",
       a, b, global_result);
+   printf("Computation took: %f seconds\n", (end - start));
    return 0;
 }  /* main */
 
