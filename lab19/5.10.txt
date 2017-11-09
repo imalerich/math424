@@ -1,0 +1,17 @@
+## All tests performed on a sum of n = 100,000,000
+
+Number of Threads : Execution Time
+1 : 1.3754333
+2 : 4.191148
+3 : 5.421126
+4 : 6.156786
+
+Here we can see that for each process added, the execution time increases.
+The most drastic increase is from 1 to 2 threads, after that each increase
+is roughly another second or so.
+
+## Does your implementation of OpenMP allow simultaneous executions of updates
+## to different variables when the updates are protected by atomic directives.
+
+No it does not. As the greatly increase in runtime 
+with an increasing number of threads indicates.

@@ -1,0 +1,32 @@
+## Run the program with various assignments to OMP_SCHEDULE.
+## All of the below are run on the range (0,1) with 10 trapezoids.
+## The array corresponds to the thread executing the corresponding element of 
+## the for loop, note that the first element is always executed outside of the loop.
+
+"static,1" : [ x 0 1 0 1 0 1 0 1 0 ]
+"static,2" : [ x 0 0 1 1 0 0 1 1 0 ]
+"dynamic,1" : [ x 0 0 0 1 0 0 1 0 1 ]
+"dynamic,2" : [ x 0 0 1 1 1 1 0 0 0 ]
+"guided,1" : [ x 0 0 0 0 0 1 1 0 1 ]
+"guided,2" : [ x 0 0 0 0 0 1 1 0 0 ]
+
+## What is the default assignment of iterations on your system?
+
+(personal system)
+	After three runs my thread assignments looked like the following by default...
+	[ 0 1 1 0 1 0 1 0 1 ]
+	[ 1 1 1 1 1 1 1 1 1 ]
+	[ 0 1 0 0 0 1 0 1 0 ]
+	There doesn't seem to be any strict assignment, so that would indicate
+	either dynamic or guided. General group sizes towards the end are smaller
+	than they are at the beginning, so looks like guided is the default for
+	my system.
+
+(hpc-class)
+	TODO
+
+## How are guided schedules determined?
+
+Each thread is initially assigned a group of chunk size data to work with.
+Upon completion of that chunk, the thread is assigned a new but smaller
+chunk to work on.

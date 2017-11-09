@@ -7,4 +7,4 @@
 module purge
 module load intel
 export I_MPI_PMI_LIBRARY=/usr/lib64/libpmi.so
-surn ./a.out
+srun ./a.out

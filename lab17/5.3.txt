@@ -5,7 +5,8 @@
 0 1 100000000
 --------------
 
-1.330922 seconds
+1.330922 seconds (local)
+1.686810 seconds (hpc-class)
 
 (b) two threads and the same value of n
 --------------
@@ -13,7 +14,8 @@
 0 1 100000000
 --------------
 
-0.667166 seconds
+0.667166 seconds (local)
+1.687241 seconds (hpc-class)
 
 ## omp_trap2b
 (a) one thread and a large value of n
@@ -22,7 +24,8 @@
 0 1 100000000
 --------------
 
-1.364856 seconds
+1.364856 seconds (local)
+1.686850 seconds (hpc-class)
 
 (b) two threads and the same value of n
 --------------
@@ -30,7 +33,8 @@
 0 1 100000000
 --------------
 
-0.000701 seconds
+0.000701 seconds (local)
+1.687075 seconds (hpc-class)
 
 ## What happens? Explain the difference.
 
