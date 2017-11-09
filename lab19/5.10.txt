@@ -1,17 +1,33 @@
 ## All tests performed on a sum of n = 100,000,000
 
+## --- personal machine ---
 Number of Threads : Execution Time
 1 : 1.3754333
 2 : 4.191148
 3 : 5.421126
 4 : 6.156786
 
+## Does your implementation of OpenMP allow simultaneous executions of updates
+## to different variables when the updates are protected by atomic directives.
+
 Here we can see that for each process added, the execution time increases.
 The most drastic increase is from 1 to 2 threads, after that each increase
 is roughly another second or so.
 
+No it does not. As the greatly increase in runtime 
+with an increasing number of threads indicates.
+
+## --- hpc-class ---
+Number of Threads : Execution Time
+1 : 5.082179
+2 : 5.091413
+3 : 5.090576
+4 : 5.101725
+
 ## Does your implementation of OpenMP allow simultaneous executions of updates
 ## to different variables when the updates are protected by atomic directives.
 
-No it does not. As the greatly increase in runtime 
-with an increasing number of threads indicates.
+The HPC class cluster appears to have equivalent runtimes no matter how many
+threads are used (test performed with --cores=4). This would indicate
+that the HPC class systems do in fact allow simultaneous executions unlike
+my personal machine.

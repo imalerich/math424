@@ -23,10 +23,12 @@
 	my system.
 
 (hpc-class)
-	TODO
+	[ 0 1 0 0 0 0 0 0 0 ]
+	[ 0 1 0 0 0 0 0 1 0 ]
+	[ 0 1 0 0 0 0 0 0 0 ]
 
 ## How are guided schedules determined?
 
-Each thread is initially assigned a group of chunk size data to work with.
+On both systems, each thread is initially assigned a group of chunk size data to work with.
 Upon completion of that chunk, the thread is assigned a new but smaller
 chunk to work on.
