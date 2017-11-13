@@ -45,6 +45,13 @@ int main(int argc, char ** argv) {
 	srand(time(NULL));
    struct list_node_s* head_p = NULL;  /* start with empty list */
 
+   if (argc == 1) {
+	   printf("Please include the thread count as argument.\n");
+	   printf("-- Each thread will generate random values to\n");
+	   printf("-- insert/delete into/from the list.\n");
+	   return 0;
+   }
+
    // allocate a bunch of threads, each thread will 
    // generate or delete random values from the linked list
    // all threads share the same queue
@@ -67,15 +74,15 @@ int main(int argc, char ** argv) {
 	   for (int i=1; i<=10; i++) {
 		   /* --- 1 in 3 operations will be a delete. --- */
 		   if (rand() % 3 == 0) {
-		       // delete a number between 0 and 9
-		       value = rand() % 10;
+		       // delete a number between 0 and 19
+		       value = rand() % 20;
 		       // otherwise we can assume it's not the head element
 		       Delete(value, &head_p);
 
 		   } else { // 2 of 3 operations will be an insert
-			   // insert a number between 0 and 9
+			   // insert a number between 0 and 19
 			   // value = rand() % 10;
-			   value = rand() % 10;
+			   value = rand() % 20;
 
 			   Insert(value, &head_p);
 		   }
@@ -196,7 +203,6 @@ void Insert(int value, struct list_node_s ** head_pp) {
 
 	if (curr_p) { omp_unset_lock(&curr_p->lock); }
 	omp_unset_lock(&pred_p->lock);
-	printf("Added [%d] to list.\n", value);
 } 
 
 /*-----------------------------------------------------------------*/
@@ -212,7 +218,7 @@ int Delete(int value, struct list_node_s ** head_pp) {
 
 	// nothing in least, nothing to delete
 	if (head_p == NULL) {
-		printf("Cannot delete [%d] not in list.\n", value);
+		printf("Cannot Delete [%d]: Not in list.\n", value);
 		return 0;
 	}
 
@@ -244,7 +250,6 @@ int Delete(int value, struct list_node_s ** head_pp) {
 			// skip the current element in the linked list
 			pred_p->next = curr_p->next;
 
-			printf("Removed [%d] from list.\n", value);
 			omp_unset_lock(&pred_p->lock);
 			omp_unset_lock(&curr_p->lock);
 			return 0;
