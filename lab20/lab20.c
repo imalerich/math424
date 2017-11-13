@@ -20,6 +20,8 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
+#include <string.h>
 #include <omp.h>
 
 struct list_node_s {
@@ -29,7 +31,7 @@ struct list_node_s {
 };
 
 int Init(int value, struct list_node_s ** head_pp);
-struct list_node_s * Insert(int value, struct list_node_s * head_p);
+void Insert(int value, struct list_node_s ** head_p);
 void Print(struct list_node_s* head_p);
 int  Member(int value, struct list_node_s* head_p);
 int  Delete(int value, struct list_node_s** head_p);
@@ -40,6 +42,7 @@ int  Get_value(void);
 
 /*-----------------------------------------------------------------*/
 int main(int argc, char ** argv) {
+	srand(time(NULL));
    struct list_node_s* head_p = NULL;  /* start with empty list */
 
    // allocate a bunch of threads, each thread will 
@@ -61,38 +64,21 @@ int main(int argc, char ** argv) {
 		 * -------------------- */
 
 	   // each thread will perform 10 operations on the queue
-	   for (int i=1; i<=5; i++) {
-		   // 1 in 3 operations will be a delete
-		   //if (rand() % 3 == 4) {
-		   //    // delete a number between 0 and 9
-		   //    value = rand() % 10;
-		   //    // otherwise we can assume it's not the head element
-		   //    Delete(value, &head_p);
+	   for (int i=1; i<=10; i++) {
+		   /* --- 1 in 3 operations will be a delete. --- */
+		   if (rand() % 3 == 0) {
+		       // delete a number between 0 and 9
+		       value = rand() % 10;
+		       // otherwise we can assume it's not the head element
+		       Delete(value, &head_p);
 
-		   //} else { // 2 of 3 operations will be an insert
+		   } else { // 2 of 3 operations will be an insert
 			   // insert a number between 0 and 9
 			   // value = rand() % 10;
-			   value = i + (omp_get_thread_num() * 5);
-			   value = rand() % 5;
-			   printf("Adding value %d\n", value);
+			   value = rand() % 10;
 
-			   // see if we need to initialize the list,
-			   // if we need to, only allow one thread to
-			   // do it in a critical section, if it's
-			   // been initialized go ahead and insert the value
-			   if (Init(value, &head_p) == 1) {
-				   if (value < head_p->data) {
-					   // if we need to update the head pointer
-					   // do the insertion in a critical section
-					   // that way only one thread can change
-					   // the head at a time 
-						#pragma omp critical
-					   { head_p = Insert(value, head_p); }
-				   } else {
-					   Insert(value, head_p);
-				   }
-			   }
-		   // }
+			   Insert(value, &head_p);
+		   }
 	   }
    }
 
@@ -136,32 +122,64 @@ int Init(int value, struct list_node_s ** head_pp) {
  * In/out arg: head_pp, a pointer to the head of the list pointer
  * Return val: 1 if value was inserted, 0 otherwise
  */            
-struct list_node_s * Insert(int value, struct list_node_s * head_p) {
-	struct list_node_s * curr_p = head_p;
-	struct list_node_s * pred_p = NULL;
+void Insert(int value, struct list_node_s ** head_pp) {
+   // see if we need to initialize the list,
+   // if we need to, only allow one thread to
+   // do it in a critical section, if it's
+   // been initialized go ahead and insert the value
+   if (Init(value, head_pp) == 0) {
+	   // value initialized the list, nothing to do
+	   return;
+   }
 
+	struct list_node_s * head_p = *head_pp;
+
+   if (value < head_p->data) {
+	   // if we need to update the head pointer
+	   // do the insertion in a critical section
+	   // that way only one thread can change
+	   // the head at a time 
+#pragma omp critical
+	   {
+			struct list_node_s * temp_p = malloc(sizeof(struct list_node_s));
+			temp_p->data = value;
+			temp_p->next = head_p;
+			omp_init_lock(&temp_p->lock); // Initialize a lock for it.
+
+			*head_pp = temp_p;
+	   }
+
+	   return;
+   } else if (value == head_p->data) {
+		printf("[%d] already in list.\n", value);
+		return;
+   }
+
+   // otherwise we know that we at least have a head
+   // and value goes somewhere after that head
+   
+	struct list_node_s * curr_p = head_p->next;
+	struct list_node_s * pred_p = head_p;
+
+	omp_set_lock(&pred_p->lock);
 	while (curr_p) {
 		omp_set_lock(&curr_p->lock);
+
 		if (curr_p->data == value) {
-			// already in the list, nothing to do, unset our locks and bail
-			omp_unset_lock(&curr_p->lock);
-
-			printf("%d is already in the list\n", value);
-			return head_p;
-		}
-
-		// curr_p will be the first element which is greater 
-		// than the data to insert, if we find nothing greater
-		// then curr_p will be NULL, either way, we insert after head_p
-		// and point to curr_p
-		if (curr_p->data > value) { 
-			omp_unset_lock(&curr_p->lock);
-			break; 
-		}
-
-		if (pred_p) {
 			omp_unset_lock(&pred_p->lock);
+			omp_unset_lock(&curr_p->lock);
+			printf("[%d] already in list.\n", value);
+			return;
 		}
+
+		if (curr_p->data > value) {
+			// value goes after pred and before curr
+			// keep both locked
+			break;
+		}
+
+		// unset the lock on pred_p before updating it
+		omp_unset_lock(&pred_p->lock);
 
 		pred_p = curr_p;
 		curr_p = curr_p->next;
@@ -174,14 +192,11 @@ struct list_node_s * Insert(int value, struct list_node_s * head_p) {
 	temp_p->next = curr_p;
 	omp_init_lock(&temp_p->lock); // Initialize a lock for it.
 
-	if (pred_p) {
-		pred_p->next = temp_p;
-		omp_unset_lock(&pred_p->lock);
-		return head_p;
-	} else {
-		// temp_p is our new head
-		return temp_p;
-	}
+	pred_p->next = temp_p;
+
+	if (curr_p) { omp_unset_lock(&curr_p->lock); }
+	omp_unset_lock(&pred_p->lock);
+	printf("Added [%d] to list.\n", value);
 } 
 
 /*-----------------------------------------------------------------*/
@@ -197,7 +212,7 @@ int Delete(int value, struct list_node_s ** head_pp) {
 
 	// nothing in least, nothing to delete
 	if (head_p == NULL) {
-		printf("Cannot delete [%d] not in list.", value);
+		printf("Cannot delete [%d] not in list.\n", value);
 		return 0;
 	}
 
@@ -221,32 +236,29 @@ int Delete(int value, struct list_node_s ** head_pp) {
 	// we need to update pred to point to cur, so we need to lock it
 	// we will also be removing cur (once found) so keep a lock on it too
 	omp_set_lock(&pred_p->lock);
-	omp_set_lock(&curr_p->lock);
-
 	while (curr_p) {
+		omp_set_lock(&curr_p->lock);
+
 		// is this the node we need to remove?
 		if (curr_p->data == value) {
 			// skip the current element in the linked list
 			pred_p->next = curr_p->next;
 
+			printf("Removed [%d] from list.\n", value);
 			omp_unset_lock(&pred_p->lock);
 			omp_unset_lock(&curr_p->lock);
 			return 0;
 		}
 
 		// else keep searching
-		struct list_node_s * tmp = pred_p;
+		omp_unset_lock(&pred_p->lock);
+		pred_p = curr_p;
 		curr_p = curr_p->next;
-		pred_p = pred_p->next;
-
-		// pred is already locked, but we need to lock the new curr_p
-		omp_set_lock(&curr_p->lock);
-		omp_unset_lock(&curr_p->lock);
 	}
 
 	omp_unset_lock(&pred_p->lock);
-	omp_unset_lock(&curr_p->lock);
-	printf("Cannot delete [%d] not in list.", value);
+	// don't need to unlock curr_p because curr_p = NULL
+	printf("Cannot delete [%d] not in list.\n", value);
 }  /* Delete */
 
 /*-----------------------------------------------------------------*/
