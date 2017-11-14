@@ -1,0 +1,65 @@
+Give an example of a linked list and a sequence of memory accesses
+to the linked list in which the following pairs of operations
+can potentially result in problems:
+
+## a. Two deletes executed simultaneously.
+
+	Given a list of the form [1,2,3].
+	Imagine we have two simultaneous deletes for 1 and 2.
+	First the delet of 1 occurs, and stores a temporary variable
+	pointing to 2 which is going to update the head.
+	Before that occurs the other thread deletes two, 
+	it may try to point 1 to 3 and fail (because 1 no longer exists
+	and was deleted by the other process) or if its smart enough
+	it may set 3 as the head of the list.
+	Then the original thread continues and overwrites the change
+	and sets it's reference to 2 (which no longer exists) as the head
+	of the list. Clearly there are many 
+	possible scenarios resulting in issues.
+
+## b. An insert and a delete executed simultaneously.
+
+	Given a list of the form [1,2,4].
+	Insert 3. Delete 2.
+	Insurt finds the node containing 2 and decides
+	to insert after that value.
+	The other process then runs and deletes 2 and
+	connects 1 and 4.
+	The first process now executes and connects
+	2 to 3 and 3 to 4, but 2 no longer exists,
+	and 1 points to 4, not 2. Again, there are 
+	many issues with this scenario.
+
+## c. A member and a delete executed simultaneously.
+
+	Given a list [1, 2, 3, 4].
+	Delete 1. Member 4.
+	The delete process removes 1, but before it can update
+	the head pointer the member process attempts to run
+	but fails as the head is pointing to an item which
+	has been deleted or removed from the list.
+	The Delete process continues to run and updates the head
+	pointer after the Member call has already failed.
+
+## d. Two inserts executed simultaneously.
+
+	Given a list [1, 5].
+	Insert 2. Insert 3.
+	Both processes run and determine they should be inserted
+	in between 1 and 5.
+	Insert 2 then performs its insertion, pointing 1 to 2 and 2 to 5.
+	Insurt 3 then performs, poniting 1 to 3 and 3 to 5. This
+	overrides the update to 1 that Insert 2 performed.
+	Thus the Insert 2 is lost and the list only contains [1, 3, 5].
+
+## e. An insert and a member executed simultaneously.
+
+	Given a list [1, 2, 5].
+	Insert 3. Member 3.
+	Member 3 will return true if 2 is linked to 3 before
+	member runs, and will return false otherwise. We cannot
+	determine exactly the behavie as it depends on CPU scheduling.
+
+	Depending on our implementation, if we link 2 to 3 before
+	we link 3 to 5, then a search for Member 5 could also fail
+	as it could traverse to 3 and fail before 3 is actually linked to 5.
