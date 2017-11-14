@@ -72,18 +72,22 @@ int main(int argc, char ** argv) {
 
 	   // each thread will perform 10 operations on the queue
 	   for (int i=1; i<=10; i++) {
-		   /* --- 1 in 3 operations will be a delete. --- */
-		   if (rand() % 3 == 0) {
+		   int r = rand() % 4;
+
+		   /* --- 1 in 4 operations will be a delete. --- */
+		   if (r == 0) {
 		       // delete a number between 0 and 19
 		       value = rand() % 20;
 		       // otherwise we can assume it's not the head element
 		       Delete(value, &head_p);
+		   } else if (r == 1) {
+		       value = rand() % 20;
+			   Member(value, head_p);
 
-		   } else { // 2 of 3 operations will be an insert
+		   } else { // 2 of 4 operations will be an insert
 			   // insert a number between 0 and 19
 			   // value = rand() % 10;
 			   value = rand() % 20;
-
 			   Insert(value, &head_p);
 		   }
 	   }
@@ -272,15 +276,18 @@ int Delete(int value, struct list_node_s ** head_pp) {
  * In arg:    head_p, pointer to the head of the list
  */
 void Print(struct list_node_s* head_p) {
-   // Doesn't modify the list, so just print it out as is.
    struct list_node_s* curr_p;
 
    printf("list = ");
 
    curr_p = head_p;
-   while (curr_p != (struct list_node_s*) NULL) {
+   while (curr_p) {
+	  omp_set_lock(&curr_p->lock);
       printf("%d ", curr_p->data);
+
+	  struct list_node_s * pred_p = curr_p;
       curr_p = curr_p->next;
+	  omp_unset_lock(&pred_p->lock);
    }
    printf("\n");
 }  /* Print */
@@ -294,22 +301,27 @@ void Print(struct list_node_s* head_p) {
  * Return val:  true, if value is in the list, false otherwise
  */
 int Member(int value, struct list_node_s* head_p) {
-   // Doesn't modify the list, so just print it out as is.
-   // Could return false if mistimed with another thread,
-   // but that's that could still happen if we used our locks.
    struct list_node_s* curr_p;
 
    curr_p = head_p;
-   while (curr_p != NULL && curr_p->data < value)
-      curr_p = curr_p->next;
+   while (curr_p) {
+	  omp_set_lock(&curr_p->lock);
 
-   if (curr_p == NULL || curr_p->data > value) {
-      printf("%d is not in the list\n", value);
-      return 0;
-   } else {
-      printf("%d is in the list\n", value);
-      return 1;
+	  if (curr_p->data == value) {
+		  omp_unset_lock(&curr_p->lock);
+		  printf("%d is in the list\n", value);
+		  return 1;
+	  }
+
+	  struct list_node_s * pred_p = curr_p;
+      curr_p = curr_p->next;
+	  omp_unset_lock(&pred_p->lock);
    }
+
+   // if we reached the end without finding the value
+   // it is not in the list
+  printf("%d is not in the list\n", value);
+  return 0;
 }  /* Member */
 
 /*-----------------------------------------------------------------*/
@@ -350,10 +362,11 @@ void Free_list(struct list_node_s** head_pp) {
  * Return val:  true, if head_p is NULL, false otherwise
  */
 int Is_empty(struct list_node_s* head_p) {
-   if (head_p == NULL)
+   if (head_p == NULL) {
       return 1;
-   else
+   } else {
       return 0;
+   }
 }  /* Is_empty */
 
 /*-----------------------------------------------------------------*/
