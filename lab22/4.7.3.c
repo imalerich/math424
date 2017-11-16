@@ -83,7 +83,6 @@ void * thread_main(void * p_memory) {
 	char ** messages = data->messages;
 
 	int send_id = (my_rank + thread_count + 1) % thread_count;
-	int recv_id = (my_rank + thread_count - 1) % thread_count;
 
 	/* ---------------------------------------------------
 	 * everyone will send first and then receive
@@ -104,15 +103,15 @@ void * thread_main(void * p_memory) {
 	 * in case the conditional fails
 	 * ------------------------------ */
 	while (1) {
-		pthread_mutex_lock(&locks[recv_id]);
-		if (messages[recv_id] != NULL) {
+		pthread_mutex_lock(&locks[my_rank]);
+		if (messages[my_rank] != NULL) {
 			// print message
-			printf("Consumer [%d] Received: %s\n", my_rank, messages[recv_id]);
-			pthread_mutex_unlock(&locks[recv_id]);
-			free(messages[recv_id]);
+			printf("Consumer [%d] Received: %s\n", my_rank, messages[my_rank]);
+			pthread_mutex_unlock(&locks[my_rank]);
+			free(messages[my_rank]);
 			break;
 		}
 
-		pthread_mutex_unlock(&locks[recv_id]);
+		pthread_mutex_unlock(&locks[my_rank]);
 	}
 }
