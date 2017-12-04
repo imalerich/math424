@@ -1,0 +1,36 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{c+cp}{\PYGZsh{}pragma omp parallel for num\PYGZus{}threads(thread\PYGZus{}count)}
+\PYG{k}{for} \PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{idx} \PYG{o}{=} \PYG{l+m+mi}{0}\PYG{p}{;} \PYG{n}{idx} \PYG{o}{\PYGZlt{}} \PYG{n}{count}\PYG{p}{;} \PYG{n}{idx}\PYG{o}{++}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+	\PYG{k+kt}{int} \PYG{n}{x} \PYG{o}{=} \PYG{p}{(}\PYG{n}{idx} \PYG{o}{\PYGZpc{}} \PYG{n}{width}\PYG{p}{)} \PYG{o}{+} \PYG{n}{bbox}\PYG{p}{.}\PYG{n}{min}\PYG{p}{.}\PYG{n}{x}\PYG{p}{;}
+	\PYG{k+kt}{int} \PYG{n}{y} \PYG{o}{=} \PYG{p}{(}\PYG{n}{idx} \PYG{o}{/} \PYG{n}{width}\PYG{p}{)} \PYG{o}{+} \PYG{n}{bbox}\PYG{p}{.}\PYG{n}{min}\PYG{p}{.}\PYG{n}{y}\PYG{p}{;}
+
+	\PYG{n}{vector\PYGZus{}t} \PYG{n}{pos} \PYG{o}{=} \PYG{n}{make\PYGZus{}vector}\PYG{p}{(}\PYG{n}{x}\PYG{p}{,} \PYG{n}{y}\PYG{p}{,} \PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mi}{0}\PYG{p}{);}
+
+	\PYG{k}{if} \PYG{p}{(}\PYG{n}{is\PYGZus{}point\PYGZus{}in\PYGZus{}triangle}\PYG{p}{(}\PYG{n}{pos}\PYG{p}{,} \PYG{n}{vertices}\PYG{p}{))} \PYG{p}{\PYGZob{}}
+		\PYG{c+c1}{// compute bary centric coordinates,}
+		\PYG{c+c1}{// we will need this for our depth test}
+		\PYG{n}{vector\PYGZus{}t} \PYG{n}{bc\PYGZus{}screen} \PYG{o}{=}
+			\PYG{n}{bary\PYGZus{}centric}\PYG{p}{(}\PYG{n}{make\PYGZus{}vector}\PYG{p}{(}\PYG{n}{x}\PYG{p}{,}\PYG{n}{y}\PYG{p}{,} \PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{l+m+mf}{0.0}\PYG{p}{),} \PYG{n}{vertices}\PYG{p}{);}
+		\PYG{k}{if} \PYG{p}{(}\PYG{n}{bc\PYGZus{}screen}\PYG{p}{.}\PYG{n}{x} \PYG{o}{\PYGZlt{}} \PYG{l+m+mi}{0} \PYG{o}{||} \PYG{n}{bc\PYGZus{}screen}\PYG{p}{.}\PYG{n}{y} \PYG{o}{\PYGZlt{}} \PYG{l+m+mi}{0} \PYG{o}{||} \PYG{n}{bc\PYGZus{}screen}\PYG{p}{.}\PYG{n}{z} \PYG{o}{\PYGZlt{}} \PYG{l+m+mi}{0}\PYG{p}{)}
+			\PYG{p}{\PYGZob{}} \PYG{k}{continue}\PYG{p}{;} \PYG{p}{\PYGZcb{}}
+		\PYG{n}{pos}\PYG{p}{.}\PYG{n}{z} \PYG{o}{=} \PYG{p}{(}\PYG{n}{vertices}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{].}\PYG{n}{z} \PYG{o}{*} \PYG{n}{bc\PYGZus{}screen}\PYG{p}{.}\PYG{n}{x}\PYG{p}{)} \PYG{o}{+}
+			\PYG{p}{(}\PYG{n}{vertices}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{].}\PYG{n}{z} \PYG{o}{*} \PYG{n}{bc\PYGZus{}screen}\PYG{p}{.}\PYG{n}{y}\PYG{p}{)} \PYG{o}{+}
+			\PYG{p}{(}\PYG{n}{vertices}\PYG{p}{[}\PYG{l+m+mi}{2}\PYG{p}{].}\PYG{n}{z} \PYG{o}{*} \PYG{n}{bc\PYGZus{}screen}\PYG{p}{.}\PYG{n}{z}\PYG{p}{);}
+
+		\PYG{k}{if} \PYG{p}{(}\PYG{n}{back}\PYG{p}{[}\PYG{n}{y}\PYG{o}{*}\PYG{n}{buffer\PYGZus{}size}\PYG{p}{.}\PYG{n}{x} \PYG{o}{+} \PYG{n}{x}\PYG{p}{]} \PYG{o}{\PYGZgt{}} \PYG{n}{pos}\PYG{p}{.}\PYG{n}{z}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+			\PYG{n}{back}\PYG{p}{[}\PYG{n}{y}\PYG{o}{*}\PYG{n}{buffer\PYGZus{}size}\PYG{p}{.}\PYG{n}{x} \PYG{o}{+} \PYG{n}{x}\PYG{p}{]} \PYG{o}{=} \PYG{n}{pos}\PYG{p}{.}\PYG{n}{z}\PYG{p}{;}
+
+			\PYG{c+c1}{// interpolate vertex data}
+			\PYG{n}{vector\PYGZus{}t} \PYG{n}{tex\PYGZus{}coord} \PYG{o}{=}
+				\PYG{n}{interpolate}\PYG{p}{(}\PYG{n}{tex\PYGZus{}coords}\PYG{p}{,} \PYG{n}{bc\PYGZus{}screen}\PYG{p}{);}
+			\PYG{n}{vector\PYGZus{}t} \PYG{n}{norm} \PYG{o}{=} \PYG{n}{interpolate}\PYG{p}{(}\PYG{n}{norms}\PYG{p}{,} \PYG{n}{bc\PYGZus{}screen}\PYG{p}{);}
+			\PYG{n}{vector\PYGZus{}t} \PYG{n}{tan} \PYG{o}{=} \PYG{n}{interpolate}\PYG{p}{(}\PYG{n}{tans}\PYG{p}{,} \PYG{n}{bc\PYGZus{}screen}\PYG{p}{);}
+
+			\PYG{n}{vector\PYGZus{}t} \PYG{n}{c} \PYG{o}{=} \PYG{n}{shader}\PYG{p}{((}\PYG{n}{shader\PYGZus{}data\PYGZus{}t}\PYG{p}{)\PYGZob{}}\PYG{n}{pos}\PYG{p}{,} \PYG{n}{tex\PYGZus{}coord}\PYG{p}{,}
+				\PYG{n}{norm}\PYG{p}{,} \PYG{n}{tan}\PYG{p}{\PYGZcb{},} \PYG{n}{material}\PYG{p}{);}
+			\PYG{n}{draw\PYGZus{}point}\PYG{p}{(}\PYG{n}{vector\PYGZus{}to\PYGZus{}point}\PYG{p}{(}\PYG{n}{pos}\PYG{p}{),} \PYG{n}{vector\PYGZus{}to\PYGZus{}color}\PYG{p}{(}\PYG{n}{c}\PYG{p}{),}
+				\PYG{n}{buffer}\PYG{p}{,} \PYG{n}{buffer\PYGZus{}size}\PYG{p}{);}
+		\PYG{p}{\PYGZcb{}}
+	\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{}}
+\end{Verbatim}
