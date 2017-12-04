@@ -1,0 +1,19 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+	\PYG{c+cp}{\PYGZsh{}pragma omp critical}
+	\PYG{p}{\PYGZob{}}
+		\PYG{k}{if} \PYG{p}{(}\PYG{n}{back}\PYG{p}{[}\PYG{n}{y}\PYG{o}{*}\PYG{n}{buffer\PYGZus{}size}\PYG{p}{.}\PYG{n}{x} \PYG{o}{+} \PYG{n}{x}\PYG{p}{]} \PYG{o}{\PYGZgt{}} \PYG{n}{pos}\PYG{p}{.}\PYG{n}{z}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+			\PYG{n}{back}\PYG{p}{[}\PYG{n}{y}\PYG{o}{*}\PYG{n}{buffer\PYGZus{}size}\PYG{p}{.}\PYG{n}{x} \PYG{o}{+} \PYG{n}{x}\PYG{p}{]} \PYG{o}{=} \PYG{n}{pos}\PYG{p}{.}\PYG{n}{z}\PYG{p}{;}
+
+			\PYG{c+c1}{// interpolate vertex data}
+			\PYG{n}{vector\PYGZus{}t} \PYG{n}{tex\PYGZus{}coord} \PYG{o}{=} \PYG{n}{interpolate}\PYG{p}{(}\PYG{n}{tex\PYGZus{}coords}\PYG{p}{,}
+				\PYG{n}{bc\PYGZus{}screen}\PYG{p}{);}
+			\PYG{n}{vector\PYGZus{}t} \PYG{n}{norm} \PYG{o}{=} \PYG{n}{interpolate}\PYG{p}{(}\PYG{n}{norms}\PYG{p}{,} \PYG{n}{bc\PYGZus{}screen}\PYG{p}{);}
+			\PYG{n}{vector\PYGZus{}t} \PYG{n}{tan} \PYG{o}{=} \PYG{n}{interpolate}\PYG{p}{(}\PYG{n}{tans}\PYG{p}{,} \PYG{n}{bc\PYGZus{}screen}\PYG{p}{);}
+
+			\PYG{n}{vector\PYGZus{}t} \PYG{n}{c} \PYG{o}{=} \PYG{n}{shader}\PYG{p}{((}\PYG{n}{shader\PYGZus{}data\PYGZus{}t}\PYG{p}{)\PYGZob{}}\PYG{n}{pos}\PYG{p}{,}
+				\PYG{n}{tex\PYGZus{}coord}\PYG{p}{,} \PYG{n}{norm}\PYG{p}{,} \PYG{n}{tan}\PYG{p}{\PYGZcb{},} \PYG{n}{material}\PYG{p}{);}
+			\PYG{n}{draw\PYGZus{}point}\PYG{p}{(}\PYG{n}{vector\PYGZus{}to\PYGZus{}point}\PYG{p}{(}\PYG{n}{pos}\PYG{p}{),}
+				\PYG{n}{vector\PYGZus{}to\PYGZus{}color}\PYG{p}{(}\PYG{n}{c}\PYG{p}{),} \PYG{n}{buffer}\PYG{p}{,} \PYG{n}{buffer\PYGZus{}size}\PYG{p}{);}
+		\PYG{p}{\PYGZcb{}}
+	\PYG{p}{\PYGZcb{}}
+\end{Verbatim}

@@ -1,0 +1,15 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k}{for} \PYG{p}{(}\PYG{k+kt}{unsigned} \PYG{n}{k}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{;} \PYG{n}{k}\PYG{o}{\PYGZlt{}}\PYG{n}{models}\PYG{p}{.}\PYG{n}{model\PYGZus{}count}\PYG{p}{;} \PYG{n}{k}\PYG{o}{++}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+	\PYG{n}{model\PYGZus{}t} \PYG{n}{m} \PYG{o}{=} \PYG{n}{models}\PYG{p}{.}\PYG{n}{models}\PYG{p}{[}\PYG{n}{k}\PYG{p}{];}
+
+	\PYG{c+cp}{\PYGZsh{}pragma omp parallel for num\PYGZus{}threads(thread\PYGZus{}count)}
+	\PYG{k}{for} \PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{i}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{;} \PYG{n}{i}\PYG{o}{\PYGZlt{}}\PYG{n}{num\PYGZus{}faces}\PYG{p}{(}\PYG{n}{m}\PYG{p}{);} \PYG{n}{i}\PYG{o}{++}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+		\PYG{n}{transform\PYGZus{}vertex}\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{v}\PYG{p}{[}\PYG{l+m+mi}{3}\PYG{o}{*}\PYG{n}{i} \PYG{o}{+} \PYG{l+m+mi}{0}\PYG{p}{],} \PYG{n}{proj}\PYG{p}{,} \PYG{n}{WIDTH}\PYG{p}{,} \PYG{n}{HEIGHT}\PYG{p}{);}
+		\PYG{n}{transform\PYGZus{}vertex}\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{v}\PYG{p}{[}\PYG{l+m+mi}{3}\PYG{o}{*}\PYG{n}{i} \PYG{o}{+} \PYG{l+m+mi}{1}\PYG{p}{],} \PYG{n}{proj}\PYG{p}{,} \PYG{n}{WIDTH}\PYG{p}{,} \PYG{n}{HEIGHT}\PYG{p}{);}
+		\PYG{n}{transform\PYGZus{}vertex}\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{v}\PYG{p}{[}\PYG{l+m+mi}{3}\PYG{o}{*}\PYG{n}{i} \PYG{o}{+} \PYG{l+m+mi}{2}\PYG{p}{],} \PYG{n}{proj}\PYG{p}{,} \PYG{n}{WIDTH}\PYG{p}{,} \PYG{n}{HEIGHT}\PYG{p}{);}
+
+		\PYG{n}{draw\PYGZus{}triangle}\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{m}\PYG{p}{,} \PYG{n}{i}\PYG{p}{,} \PYG{n}{simple\PYGZus{}shader}\PYG{p}{,}
+			\PYG{n}{m}\PYG{p}{.}\PYG{n}{material}\PYG{p}{,} \PYG{n}{buffer}\PYG{p}{,} \PYG{n}{back\PYGZus{}buffer}\PYG{p}{,} \PYG{n}{SIZE}\PYG{p}{);}
+	\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{}}
+\end{Verbatim}
