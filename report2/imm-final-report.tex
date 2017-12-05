@@ -22,6 +22,7 @@ Therefore the problem size varies across two primary variables: the number of tr
 need to be rendered and the dimensions of the output texture, that is, how many pixel need
 to be colored.  The image below was output by this program given the input file `models/war.obj'.
 
+\smallbreak
 \begin{center}
 	\includegraphics[scale=0.17]{war.png}
 \end{center}
@@ -289,6 +290,31 @@ in all other cases it performs the best.
 	\includegraphics[width=\textwidth]{method_comp.png}
 \end{center}
 
+\section*{Memory Usage}
+
+Memory will be used mostly by textures and models which need to be stored in memory
+for the entire duration of the rendering process. Below is a table which compares peak
+memory usage against the number of threads used to render `ironman.obj'. Memory was profiled using
+heaptrack.
+
+\begin{center}
+	\begin{tabular}{|c|c|c|}
+		\hline
+		num\_threads & peak memory usage \\ \hline
+		1	& 131.1 MB \\ \hline
+		2	& 131.1 MB \\ \hline
+		4	& 131.1 MB \\ \hline
+		8	& 131.1 MB \\ \hline
+		16	& 131.1 MB \\ \hline
+	\end{tabular}
+\end{center}
+
+This is exactly the behavior we would expect, since I am only using threads, all memory is shared
+between processes. All allocations occur outside of threads and threads only perform computations
+to write to their thread specific location in shared memory. Despite this, memory usage is still quite
+large, but again this is to be expected do to the nature of the large image and model files needed
+to render the output.
+
 \section*{OpenMP Scheduling}
 
 Using Method 3, the following graphs analyze different OpenMP scheduling methods and chunk sizes.
@@ -302,6 +328,7 @@ nearby memory for their next computation, a trait that a larger chunk size provi
 \begin{center}
 	\includegraphics[width=\textwidth]{scheduling.png}
 \end{center}
+\clearpage
 Running static distrubition with various chunk sizes shows that the chunk size can clearly be too large.
 Sizes 64 and 128 are particularly terrible. Chunk sizes between 4 and 32 seem to perform the best.
 \begin{center}
@@ -338,7 +365,6 @@ significant.
 	\end{tabular}
 \end{center}
 
-\clearpage
 \section*{References}
 
 \begin{itemize}

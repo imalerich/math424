@@ -68,8 +68,8 @@ INPUT /usr/share/texmf-dist/tex/latex/breqn/cmbase.sym
 INPUT /usr/share/texmf-dist/tex/latex/breqn/cmbase.sym
 INPUT /usr/share/texmf-dist/tex/latex/breqn/mathstyle.sty
 INPUT /usr/share/texmf-dist/tex/latex/breqn/mathstyle.sty
-INPUT /usr/share/texmf-dist/tex/latex/minted/minted.sty
-INPUT /usr/share/texmf-dist/tex/latex/minted/minted.sty
+INPUT /usr/share/texmf/tex/latex/minted/minted.sty
+INPUT /usr/share/texmf/tex/latex/minted/minted.sty
 INPUT /usr/share/texmf-dist/tex/latex/oberdiek/kvoptions.sty
 INPUT /usr/share/texmf-dist/tex/latex/oberdiek/kvoptions.sty
 INPUT /usr/share/texmf-dist/tex/generic/oberdiek/ltxcmds.sty
@@ -82,8 +82,8 @@ INPUT /usr/share/texmf-dist/tex/generic/oberdiek/etexcmds.sty
 INPUT /usr/share/texmf-dist/tex/generic/oberdiek/etexcmds.sty
 INPUT /usr/share/texmf-dist/tex/generic/oberdiek/ifluatex.sty
 INPUT /usr/share/texmf-dist/tex/generic/oberdiek/ifluatex.sty
-INPUT /usr/share/texmf-dist/tex/latex/fvextra/fvextra.sty
-INPUT /usr/share/texmf-dist/tex/latex/fvextra/fvextra.sty
+INPUT /usr/share/texmf/tex/latex/fvextra/fvextra.sty
+INPUT /usr/share/texmf/tex/latex/fvextra/fvextra.sty
 INPUT /usr/share/texmf-dist/tex/latex/base/ifthen.sty
 INPUT /usr/share/texmf-dist/tex/latex/base/ifthen.sty
 INPUT /usr/share/texmf-dist/tex/latex/etoolbox/etoolbox.sty
@@ -94,6 +94,7 @@ INPUT /usr/share/texmf-dist/tex/latex/upquote/upquote.sty
 INPUT /usr/share/texmf-dist/tex/latex/upquote/upquote.sty
 INPUT /usr/share/texmf-dist/tex/latex/lineno/lineno.sty
 INPUT /usr/share/texmf-dist/tex/latex/lineno/lineno.sty
+INPUT /usr/share/texmf-dist/fonts/tfm/public/cm/cmtt12.tfm
 INPUT /usr/share/texmf-dist/tex/latex/tools/shellesc.sty
 INPUT /usr/share/texmf-dist/tex/latex/tools/shellesc.sty
 INPUT /usr/share/texmf-dist/tex/latex/tools/shellesc.sty
@@ -245,7 +246,6 @@ INPUT _minted-imm-final-report/246787238FABEECA1274B548DF154741505609B5624A246F0
 INPUT _minted-imm-final-report/246787238FABEECA1274B548DF154741505609B5624A246F07917DE5AF118E6E.pygtex
 INPUT _minted-imm-final-report/246787238FABEECA1274B548DF154741505609B5624A246F07917DE5AF118E6E.pygtex
 INPUT _minted-imm-final-report/246787238FABEECA1274B548DF154741505609B5624A246F07917DE5AF118E6E.pygtex
-INPUT /usr/share/texmf-dist/fonts/tfm/public/cm/cmtt12.tfm
 INPUT /usr/share/texmf-dist/fonts/tfm/public/cm/cmitt10.tfm
 OUTPUT imm-final-report.pyg
 INPUT ./imm-final-report.pyg
