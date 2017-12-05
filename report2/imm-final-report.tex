@@ -1,5 +1,5 @@
 \documentclass[12pt]{article}
-\title{3D Software Rasterisation Renderer \\ \large Com S 424 Final Project}
+\title{\vspace{-6ex}3D Software Rasterisation Renderer \\ \large Com S 424 Final Project}
 \author{Ian Malerich \\ imm@iastate.edu}
 \usepackage{amssymb, amsfonts, amsthm, mathtools, graphicx, breqn}
 \usepackage{minted, subfig, float, scrextend, setspace, soul, caption, subcaption}
@@ -14,24 +14,23 @@
 
 \section*{Introduction}
 
-This project implements a rendering system for 3 dimensional graphics, defined as a set
+This project implements a rendering system for 3D computer graphics, defined as a set
 of triangles in 3 dimensional space. Models are input via a .obj file containing triangle data
 as well as a .mtl referenced by the .obj file which holds texture information. A camera is set
 at the origin looking down the z-axis and captures a single image representing the scene.
 Therefore the problem size varies across two primary variables: the number of triangles which
 need to be rendered and the dimensions of the output texture, that is, how many pixel need
-to be colored.
+to be colored.  The image below was output by this program given the input file `models/war.obj'.
 
-\bigbreak
 \begin{center}
-	\includegraphics[scale=0.13]{war.png}
+	\includegraphics[scale=0.17]{war.png}
 \end{center}
 
 \clearpage
 \section*{Systems}
 
-Results are included for both my personal system and the hpc cluster. The below chart provides some basic
-information about each system as read from /proc/cpuinfo.
+Results are included for both my personal system and the hpc cluster. 
+The chart below provides some basic information about each system as read from /proc/cpuinfo.
 
 \bigbreak
 \begin{center}
@@ -40,7 +39,7 @@ information about each system as read from /proc/cpuinfo.
 		system & personal & hpc-class \\ \hline \hline
 		model name & i7-3630QM & Xeon CPU-E5-2650 \\ \hline
 		cores & 4 & 8 \\ \hline
-		nproc & 8 & 13 \\ \hline
+		processors & 8 & 16 \\ \hline
 		clock speed & 2.40GHz & 2.00GHz \\ \hline
 		cache size & 6144 KB & 20480 KB \\ \hline
 		address size (physical) & 36 bits & 46 bits \\ \hline
@@ -52,15 +51,16 @@ information about each system as read from /proc/cpuinfo.
 
 Below are a list of models which will be used for various performance tests as well as how many
 vertices make up the model. Note that each model has accompanying textures which will affect memory
-usage but in terms of performance texture samples are handled per pixel and thus the output image
-size is the bigger concern and not buffer size.
-It is worth mentioning that while the model 'war' has the least vertices, it is the only model
-not made up of a single mesh. Rather, war is made up by 10 smaller models each with their own texture.
+usage. However, with respect to performance, texture samples are handled per pixel, and thus
+the size of the output image is the bigger concern and not texture buffer size.
+It is worth mentioning that while the model `war' has the least vertices, it is the only model
+not made up of a single mesh. Rather, war is made up by 10 smaller models each with their own 
+independent set of vertices and texture.
 Thus as the provided graphs will demonstrate the performance of this mesh does not quite fall in line
-with the other models.
+with the other models with respect to vertex count.
 
 \begin{center}
-	\includegraphics[scale=0.225]{models.png}
+	\includegraphics[width=\textwidth]{models.png}
 \end{center}
 
 \bigbreak
@@ -77,25 +77,27 @@ with the other models.
 
 \section*{Measurements}
 
-The primary goal in regards to performance is to minimize total rendering time. To that respect, I will
+The primary performance goal is to minimize total rendering time. To that respect, I will
 not be including model and texture load times as well as output image write time in any measurements. 
 The clock will begin at the start at the rendering process and end once rendering is complete.
+Thus, factors such as disk speed will not have an impact on my results.
 
 \section*{Serial Execution}
 
 Below we can see how well my code performs when running in serial. We can clearly see that the output
 image resolution has a much greater influence on total render time. Number of vertices does tend to
 produce longer render times but the increase is much more gradual. Note that an output image of 
-size $3840\times2160$ (orange) is exactly $4\times$ that of $1920\times1080$ (blue) thus based only on results so far
+size $3840\times2160$ (orange) is exactly $4\times$ that of $1920\times1080$ (blue). Thus based only on results so far
 render time appears to scale almost linearly with image resolution. Regardless, based on this graph
 our concern is much less with vertex transformations and much more with pixel rendering.
 
 \begin{center}
-	\includegraphics[scale=0.5]{serial_personal.png}
+	\includegraphics[width=\textwidth]{serial.png}
 \end{center}
 
-I ran the valgrind profiler `callgrind' on the blackdragon mesh at a resolution of $3840\times2160$ to see
-exactly how much time was spent in code. The table below contains relevant data produced by callgrind.
+I ran the valgrind profiler `callgrind' on the blackdragon mesh at a resolution of 
+$3840\times2160$ to see exactly how much time was spent in code. 
+The table below contains relevant data produced by callgrind.
 Note I have ommitted calls involved in model/texture loading which require compressions/disk access beyond
 my control and concern.
 
@@ -113,7 +115,7 @@ my control and concern.
 	\end{tabular}
 \end{center}
 
-All top calls which influence the measurements I am taking directly relate pixel rendering and not
+All top calls which influence the measurements I am taking directly relate to pixel rendering and not
 vertex transformations. Confirming what we noted about the serial execution graph. This tells us 
 that while improved vertex transformations may help our performance, the bigger gains are to be made
 from parallelizing the pixel rendering code.
@@ -121,9 +123,10 @@ from parallelizing the pixel rendering code.
 \section*{Parallelization}
 
 The easiest method, and the first method I will try, to parallelize this code is a simple parallel for
-directive loop over each face. Each thread will then transform 3 vertices corresponding to its assigned
+loop directive over each face. Each thread will then transform 3 vertices corresponding to its assigned
 face, and then draw the given triangle. Within the draw\_triangle method critical sections are needed
-when writing to the back and output buffers so that only one thread may write at a time. All other
+when writing to the back and output buffers so that only one thread may write at a time. This is
+necessary as it is possible for triangles to overlap on screen. All other
 operations may be performed in parallel.
 
 \begin{minted}[linenos, tabsize=2]{c}
@@ -163,19 +166,23 @@ rendering code. We found by analyzing the serial implementation that this is whe
 majority of our work will take place and by forcing it into a critical section we are
 severely limiting the potential performance gains. Nevertheless, we still see a performance
 increase when introducing threading, although limited to just a few threads. Additional threads
-likely do not provide enough added benefit to overcome the limitations of the per pixel critical section.
+likely do not provide enough added benefit to overcome the limitations of the per 
+pixel critical section.
+Note that both my personal system and the hpc-class system both reach minimum render time
+using 4 threads. Further threads decrease performance.
 
 \begin{center}
-	\includegraphics[scale=0.5]{parallel0_personal.png}
+	\includegraphics[width=\textwidth]{method1.png}
 \end{center}
 \textcolor[RGB]{200,200,200}{\rule{\textwidth}{0.75pt}}\bigbreak
 
-Note that vertex transformation code is entirely independent each triangle. As such, we can split
-our vertex transformation code and triangle rasterization code into separate loops. 
+Each vertex transformation is entirely independent from triangle rasterisation. As such, we can split
+our vertex transformation code and triangle rasterisation code into separate loops. 
 This exemplifies the idea that these are the two dimensions on which the program scales. By doing
 this if a thread would be stuck waiting for a critical section in the old code, it can now continue
-to transform vertices in parallel. By using this method, we can see a very slight but insignificant
-increase in performance, particularly when number of threads is large.
+to transform vertices in parallel. Because the added benefit is within vertex transformations,
+and not pixel rendering, almost no difference is seen between this method and our previous
+approach.
 
 \begin{minted}[linenos, tabsize=2]{c}
 #pragma omp parallel for num_threads(thread_count)
@@ -191,23 +198,23 @@ for (int i=0; i<num_faces(m); i++) {
 \end{minted}
 
 \begin{center}
-	\includegraphics[scale=0.5]{parallel1_personal.png}
+	\includegraphics[width=\textwidth]{method2.png}
 \end{center}
 \textcolor[RGB]{200,200,200}{\rule{\textwidth}{0.75pt}}\bigbreak
 
 To get over the critical section hurdle, we could introduce a lock 
 for each given pixel. We can have multiple threads writing to buffers
-so long as they are not writing to the same location (triangles can overlap!).
+so long as they are not writing to the same location (recall triangles can overlap).
 However locks can be slow and for a $3840\times2160$ image we would require 8.3 million
-locks, which would need a lock and unlock for every single write. This seems highly
-impractical and not likely to solve anything. Thus I will ignore this strategy.
+locks, which would require a lock and unlock operation for every single read/write. This seems highly
+impractical and not likely to solve anything.
 \bigbreak
-A much better approach would be to run the rasterization step in parallel. That is,
+A much better approach would be to run the rasterisation step in parallel. That is,
 we loop through triangles on our main thread, and then spawn a set of threads which 
 iterate over the bounding region of that triangle. Thus each per pixel operation can be
 performed in parallel. Further since each pixel within a bounding box is unique, we can 
 guarantee each thread is reading/writing to a unique location in the back and output buffers.
-Thus no critical section is necessary in the below implementation.
+Therefore no critical section is necessary for this implementation.
 
 \begin{minted}[linenos, tabsize=2]{c}
 #pragma omp parallel for num_threads(thread_count)
@@ -260,43 +267,76 @@ for (int idx = 0; idx < count; idx++) {
 
 In the graph below we can see much larger increases in performance than we have 
 experienced before. Even the most complex models can be rendered in just over 2 seconds
-with the simplest approaching 1 second. Note that on my personal system a huge spike upwards 
+with the simplest near 1 second or less. Note that on my personal system a major spike upwards 
 occurs for $>8$ threads, this is not particularly of interest as my system cannot run any more than
-8 threads at a given time thus using more only incurs additional overhead.
+8 threads at a given time thus using more only incurs additional overhead. The hpc-class system,
+for which $16$ threads are available, continued to see a small performance increase
+from $8$ to $16$ threads.
 
 \begin{center}
-	\includegraphics[scale=0.5]{parallel2_personal.png}
+	\includegraphics[width=\textwidth]{method3.png}
 \end{center}
 
 \section*{Method Comparison}
 
-In all cases, ironman took the most significant amount of time to render. The graph below
-shows a comparison between the 3 methods in rendering this model at $3840\times2160$. We can see
-the final solution branching off from the other methods starting particularly at $4+$ threads.
+The graph below shows a comparison between the 3 methods in rendering `models/ironman.obj' 
+at a resolution of $3840\times2160$. We can see
+the final solution branching off from the other methods starting particularly at $4$ threads.
 Interestingly, we can see Method 3 is hit the hardest when run on too many threads, though clearly
 in all other cases it performs the best.
 
 \begin{center}
-	\includegraphics[scale=0.5]{parallel3_personal.png}
+	\includegraphics[width=\textwidth]{method_comp.png}
 \end{center}
 
 \section*{OpenMP Scheduling}
 
 Using Method 3, the following graphs analyze different OpenMP scheduling methods and chunk sizes.
-With the exception of (dynamic, 1) performing notably terrible, they all seem relatively close in performance
-to each other and all follow the same overall trends. It appears larger chunk sizes provide the best performance.
-This is likely due to the fact that each operation is relatively short and thus threads will benefit having
+With the exception of (dynamic, 1) performing notably poor, 
+they all seem relatively close in performance
+to each other and all follow the same overall trends. 
+It appears larger chunk sizes provide the best performance.
+This is likely due to the fact that each operation is relatively short 
+and thus threads will benefit having
 nearby memory for their next computation, a trait that a larger chunk size provides.
 \begin{center}
-	\includegraphics[scale=0.5]{scheduling_personal.png}
+	\includegraphics[width=\textwidth]{scheduling.png}
 \end{center}
 Running static distrubition with various chunk sizes shows that the chunk size can clearly be too large.
 Sizes 64 and 128 are particularly terrible. Chunk sizes between 4 and 32 seem to perform the best.
 \begin{center}
-	\includegraphics[scale=0.5]{static_personal.png}
+	\includegraphics[width=\textwidth]{chunksize.png}
 \end{center}
 
+\clearpage
 \section*{Conclusion}
+
+Here we will again be looking at `models/ironman.obj' being rendered at $3840\times2160$. The
+table below compares the speedup and efficiency for our final method. From these results
+we can see that so long as the processor has threads to spare, we get an increase in
+speedup with an increase in threads. However with each added thread we do take a dip in efficiency.
+Regardless, on the given systems, having a $4.5\times$ peak potential speedup is still quite
+significant.
+
+\bigbreak
+\begin{center}
+	\begin{tabular}{|c|c|c|c|}
+		\hline
+		thread\_count & render time & speedup & efficiency \\ \hline \hline
+		\multicolumn{4}{|c|}{hpc-class } \\ \hline
+		1 & 5.931814 & 1.0000 & 100\% \\ \hline
+		2 & 3.498120 & 1.6957 & 84.785\% \\ \hline
+		4 & 2.295993 & 2.0040 & 50.100\% \\ \hline
+		8 & 1.504625 & 3.9424 & 49.280\% \\ \hline
+		16 & 1.302732 & 4.5534 & 28.459\% \\ \hline
+		\multicolumn{4}{|c|}{personal } \\ \hline
+		1 & 5.989702 & 1.0000 & 100\% \\ \hline
+		2 & 3.455032 & 1.7336 & 86.680\% \\ \hline
+		4 & 2.017855 & 2.9684 & 74.210\% \\ \hline
+		8 & 1.854047 & 1.2306 & 15.382\% \\ \hline
+		16 & 7.986002 & 0.75003 & 4.687\% \\ \hline
+	\end{tabular}
+\end{center}
 
 \clearpage
 \section*{References}
